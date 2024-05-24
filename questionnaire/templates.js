@@ -2,11 +2,11 @@
 
 const applicationTemplate = require('q-templates-application');
 
-const tcqeTemplate = require('q-templates-tcqe');
+const letterTemplates = require('q-templates-letters');
 
 const applicationTemplateAsJson = JSON.stringify(applicationTemplate);
 
-const tcqeTemplateAsJson = JSON.stringify(tcqeTemplate);
+const tcqeTemplateAsJson = JSON.stringify(letterTemplates.tcqe);
 
 function getApplicationTemplateCopy() {
     return JSON.parse(applicationTemplateAsJson);
