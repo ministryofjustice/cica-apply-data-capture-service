@@ -2,11 +2,13 @@
 
 const applicationTemplate = require('q-templates-application');
 
-const tcqeTemplate = require('q-templates-tcqe');
+const letterTemplates = require('q-templates-actions');
 
 const applicationTemplateAsJson = JSON.stringify(applicationTemplate);
 
-const tcqeTemplateAsJson = JSON.stringify(tcqeTemplate);
+const tcqeTemplateAsJson = JSON.stringify(letterTemplates.tcqe);
+
+const decisionLetterTemplateAsJson = JSON.stringify(letterTemplates.decisionletter);
 
 function getApplicationTemplateCopy() {
     return JSON.parse(applicationTemplateAsJson);
@@ -14,6 +16,10 @@ function getApplicationTemplateCopy() {
 
 function getTcqeTemplateCopy() {
     return JSON.parse(tcqeTemplateAsJson);
+}
+
+function getDecisionLetterTemplateCopy() {
+    return JSON.parse(decisionLetterTemplateAsJson);
 }
 
 module.exports = {
@@ -24,5 +30,9 @@ module.exports = {
     tcqe: id => ({
         id,
         ...getTcqeTemplateCopy()
+    }),
+    decisionletter: id => ({
+        id,
+        ...getDecisionLetterTemplateCopy()
     })
 };
