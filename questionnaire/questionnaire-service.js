@@ -348,6 +348,7 @@ function createQuestionnaireService({
         return {
             summary: questionnaire.routes.summary,
             confirmation: questionnaire.routes.confirmation,
+            pageType: questionnaire.sections[sectionId]?.schema?.meta?.pageType,
             final: isFinalType
         };
     }
