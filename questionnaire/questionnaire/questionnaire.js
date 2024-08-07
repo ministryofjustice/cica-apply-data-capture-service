@@ -1,5 +1,7 @@
 'use strict';
 
+const createTaskListService = require('../task-list/task-list-service');
+
 const defaults = {};
 defaults.createSection = require('./section');
 defaults.createTaxonomy = require('./taxonomy/taxonomy');
@@ -11,6 +13,7 @@ defaults.deepClone = require('./utils/deepCloneJsonDerivedObject');
 defaults.getJsonExpressionEvaluator = require('./utils/getJsonExpressionEvaluator');
 defaults.qExpression = require('q-expressions');
 defaults.sortThemedAnswers = require('./utils/sortThemedAnswers');
+defaults.getProgressArray = require('../utils/getProgressArray');
 
 function createQuestionnaire({
     questionnaireDefinition,
@@ -23,26 +26,15 @@ function createQuestionnaire({
     deepClone = defaults.deepClone,
     getJsonExpressionEvaluator = defaults.getJsonExpressionEvaluator,
     qExpression = defaults.qExpression,
-    sortThemedAnswers = defaults.sortThemedAnswers
+    sortThemedAnswers = defaults.sortThemedAnswers,
+    getProgressArray = defaults.getProgressArray
 }) {
     function getId() {
         return questionnaireDefinition.id;
     }
 
     function getProgress() {
-        return questionnaireDefinition.progress || [];
-    }
-
-    function getProgressUntil(sectionId) {
-        const allProgress = getProgress();
-        const endIndex = allProgress.indexOf(sectionId);
-
-        if (endIndex > -1) {
-            const progressSubset = allProgress.slice(0, endIndex);
-            return progressSubset;
-        }
-
-        return allProgress;
+        return getProgressArray(questionnaireDefinition);
     }
 
     function getRoles() {
@@ -54,7 +46,7 @@ function createQuestionnaire({
     }
 
     function getOrderedAnswers() {
-        const progress = getProgress();
+        const progress = getProgress(questionnaireDefinition);
         const answers = getAnswers();
         const orderedAnswers = {};
 
@@ -148,12 +140,13 @@ function createQuestionnaire({
         return transformedData;
     }
 
-    function evaluateJsonExpression(value, sectionId) {
+    function evaluateJsonExpression(value /* , sectionId */) {
         const fnName = value[0];
 
         if (fnName === 'summary') {
             // TODO: handle multiple summary pages e.g. summarise between last summary and this one
-            const progressSubset = getProgressUntil(sectionId);
+            // const progressSubset = getProgressUntil(sectionId);
+            const progressSubset = getProgress(questionnaireDefinition);
             const summaryOptions = value[1];
 
             // eslint-disable-next-line no-use-before-define
@@ -229,11 +222,16 @@ function createQuestionnaire({
     }
 
     function getSection(sectionId, allowSummary = true) {
+        const taskListService = createTaskListService();
         const sectionDefinition = getSectionDefinition(sectionId);
         const sectionDefinitionVars = getSectionDefinitionVars(sectionDefinition);
         const allQuestionnaireAnswers = {answers: getAnswers()};
         const orderedValueTransformers = [];
         const valueInterpolator = getValueInterpolator(allQuestionnaireAnswers);
+
+        if (taskListService.isTaskListSchema({sectionSchema: sectionDefinition.schema})) {
+            taskListService.updateTaskListSchema(questionnaireDefinition, sectionDefinition);
+        }
 
         if (sectionDefinition.l10n !== undefined) {
             const jsonExpressionEvaluator = getJsonExpressionEvaluator({
@@ -294,7 +292,7 @@ function createQuestionnaire({
     }
 
     function getDataAttributes({
-        progress = getProgress(),
+        progress = getProgress(questionnaireDefinition),
         dataAttributeTransformer,
         includeMetadata = true
     } = {}) {

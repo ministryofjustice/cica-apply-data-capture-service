@@ -11,7 +11,7 @@ const {
 } = require('../questionnaire/utils/taskRunner/tasks/generateCaseReference');
 const {sendSubmissionMessageToSQS} = require('../questionnaire/utils/taskRunner/tasks/postToSQS');
 const sendNotifyMessageToSQS = require('../questionnaire/utils/taskRunner/tasks/postToNotify');
-
+const getProgress = require('../utils/getProgressArray');
 const {createAppError} = require('../../middleware/error-handler/createAppError');
 
 function createSubmissionService({
@@ -38,7 +38,7 @@ function createSubmissionService({
         // are we currently, or have we been on this questionnaire's summary page?
         // we infer a questionnaire is complete if the user has visited the summary page.
         const summarySectionIds = questionnaireDefinition.routes.summary;
-        const progressEntries = questionnaireDefinition.progress;
+        const progressEntries = getProgress(questionnaireDefinition);
 
         return summarySectionIds.some(summarySectionId =>
             progressEntries.includes(summarySectionId)

@@ -1,7 +1,9 @@
 'use strict';
 
 function getDependentQuestionIds(questionId, sortingInstructions) {
-    const questionOrdering = sortingInstructions[questionId];
+    const questionOrdering = sortingInstructions.questions
+        ? sortingInstructions.questions[questionId]
+        : sortingInstructions[questionId];
     return questionOrdering || [];
 }
 
@@ -34,4 +36,25 @@ function sortThemedAnswers(themeContent, sortingInstructions) {
     return themeContent;
 }
 
-module.exports = sortThemedAnswers;
+function sortThemes(themeContent, sortingInstructions) {
+    const themesWithAnswers = sortThemedAnswers(themeContent, sortingInstructions);
+    if (!sortingInstructions.sections) {
+        return themesWithAnswers;
+    }
+    const orderMap = new Map();
+
+    sortingInstructions.sections.forEach((id, index) => {
+        orderMap.set(id, index);
+    });
+
+    return themesWithAnswers.sort((a, b) => {
+        const orderA = orderMap.get(a.id);
+        const orderB = orderMap.get(b.id);
+        return (
+            (orderA !== undefined ? orderA : Number.MAX_VALUE) -
+            (orderB !== undefined ? orderB : Number.MAX_VALUE)
+        );
+    });
+}
+
+module.exports = sortThemes;
