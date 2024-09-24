@@ -549,6 +549,21 @@ function createQuestionnaireService({
         return db.getQuestionnaireIdsBySubmissionStatus(status);
     }
 
+    async function getSectionSubmission(questionnaireId, sectionId) {
+        const questionnaireDefinition = await getQuestionnaire(questionnaireId);
+
+        const questionnaire = createQuestionnaireHelper({
+            questionnaireDefinition
+        });
+
+        const section = questionnaire.getSection(sectionId);
+        const sectionSchema = section.getSchema();
+
+        const isSubmission = sectionSchema?.options?.pageContext === 'submission';
+
+        return isSubmission;
+    }
+
     return Object.freeze({
         createQuestionnaire,
         createAnswers,
@@ -562,7 +577,8 @@ function createQuestionnaireService({
         getSessionResource,
         getAnswersBySectionId,
         updateExpiryForAuthenticatedOwner,
-        getQuestionnaireIdsBySubmissionStatus
+        getQuestionnaireIdsBySubmissionStatus,
+        getSectionSubmission
     });
 }
 
