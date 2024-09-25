@@ -272,6 +272,12 @@ function createQuestionnaire({
 
         orderedValueTransformers.push(valueInterpolator);
 
+        const meta = getMetadata();
+        if (meta?.personalisation) {
+            const metaValueInterpolator = getValueInterpolator({meta: meta});
+            orderedValueTransformers.push(metaValueInterpolator);
+        }
+
         // TODO: DON'T MUTATE ORIGINAL!
         // contextualise > replace vars > interpolate
         mutateObjectValues(sectionDefinition.schema, orderedValueTransformers);
@@ -352,6 +358,7 @@ function createQuestionnaire({
 
     function getPermittedActions() {
         const actions = questionnaireDefinition?.meta?.onComplete?.actions;
+        const valueTransformers = [];
 
         if (actions) {
             const answersAndRoles = {
@@ -371,12 +378,18 @@ function createQuestionnaire({
             });
             const valueInterpolator = getValueInterpolator(answersAndRoles);
             const jsonExpressionEvaluator = getJsonExpressionEvaluator(answersAndRoles);
+            valueTransformers.push(jsonExpressionEvaluator);
+            valueTransformers.push(valueInterpolator);
+
+            const meta = getMetadata();
+            if (meta?.personalisation) {
+                const metaValueInterpolator = getValueInterpolator({meta: meta});
+                valueTransformers.push(metaValueInterpolator);
+            }
+
             const resolvedActions = permittedActions.map(permittedAction => {
                 if ('data' in permittedAction) {
-                    mutateObjectValues(permittedAction.data, [
-                        jsonExpressionEvaluator,
-                        valueInterpolator
-                    ]);
+                    mutateObjectValues(permittedAction.data, valueTransformers);
                 }
 
                 return permittedAction;
