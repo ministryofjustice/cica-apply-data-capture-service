@@ -367,10 +367,14 @@ function createQuestionnaire({
                     q__roles: getRoles()
                 }
             };
+
+            const meta = getMetadata();
+
             const permittedActions = actions.filter(action => {
                 if ('cond' in action) {
-                    const isPermittedAction = qExpression.evaluate(action.cond, answersAndRoles);
-
+                    const isPermittedAction =
+                        qExpression.evaluate(action.cond, answersAndRoles) ||
+                        qExpression.evaluate(action.cond, {meta: meta});
                     return isPermittedAction;
                 }
 
@@ -381,7 +385,6 @@ function createQuestionnaire({
             valueTransformers.push(jsonExpressionEvaluator);
             valueTransformers.push(valueInterpolator);
 
-            const meta = getMetadata();
             if (meta?.personalisation) {
                 const metaValueInterpolator = getValueInterpolator({meta: meta});
                 valueTransformers.push(metaValueInterpolator);
