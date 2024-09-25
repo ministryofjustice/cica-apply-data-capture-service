@@ -33,6 +33,22 @@ const failedSubmissionStatus = 'FAILED';
 const originData = {
     channel: 'telephone'
 };
+const onCreateTasks = {
+    id: 'task0',
+    type: 'sequential',
+    retries: 0,
+    data: [
+        {
+            id: 'task1',
+            type: 'sendNotifyMessageToSQS',
+            retries: 0,
+            data: {
+                questionnaire: '$.questionnaireDef',
+                logger: '$.logger'
+            }
+        }
+    ]
+};
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -209,6 +225,23 @@ jest.doMock('./utils/isQuestionnaireVersionCompatible', () => questionnaireVersi
 
 const mockDalService = require('./questionnaire-dal')();
 
+jest.doMock('./templates/templates', () => ({
+    templateService: {
+        getTemplateAsJson: async (name, version) => {
+            const realTemplateService = jest.requireActual('./templates/templates');
+            const templateAsJson = await realTemplateService.templateService.getTemplateAsJson(
+                name,
+                version
+            );
+            const template = JSON.parse(templateAsJson);
+            return JSON.stringify({
+                ...template,
+                onCreate: onCreateTasks
+            });
+        }
+    }
+}));
+
 const createQuestionnaireService = require('./questionnaire-service');
 
 describe('Questionnaire Service', () => {
@@ -227,7 +260,11 @@ describe('Questionnaire Service', () => {
     });
     describe('DCS API Version 2023-05-17', () => {
         const questionnaireService = createQuestionnaireService({
-            logger: () => 'Logged from createQuestionnaire test',
+            logger: {
+                info: jest.fn(() => {
+                    return 'Logged from createQuestionnaire test';
+                })
+            },
             apiVersion,
             ownerId
         });
@@ -350,6 +387,40 @@ describe('Questionnaire Service', () => {
                 await expect(
                     questionnaireService.createQuestionnaire(templatename, ownerData)
                 ).rejects.toThrow('Owner data must be defined');
+            });
+
+            it('Should run any onCreate tasks defined in the questionnaire', async () => {
+                const runMock = jest.fn(() => 'ok!');
+                const questionnaireService = createQuestionnaireService({
+                    logger: () => 'Logged from createQuestionnaire test',
+                    apiVersion,
+                    createTaskRunner: () => {
+                        return {run: runMock};
+                    }
+                });
+                await questionnaireService.createQuestionnaire(templatename, ownerData);
+                expect(runMock).toHaveBeenCalledWith(onCreateTasks);
+            });
+
+            it('Should log an error but still return if any onCreate tasks fail', async () => {
+                const failError = new Error('Task failed to run');
+                const runMock = jest.fn(() => {
+                    throw failError;
+                });
+                const loggerMock = {info: jest.fn()};
+                const questionnaireService = createQuestionnaireService({
+                    logger: loggerMock,
+                    apiVersion,
+                    createTaskRunner: () => {
+                        return {run: runMock};
+                    }
+                });
+
+                await expect(
+                    questionnaireService.createQuestionnaire(templatename, ownerData)
+                ).resolves.not.toThrow();
+                expect(runMock).toHaveBeenCalledWith(onCreateTasks);
+                expect(loggerMock.info).toHaveBeenCalledWith(failError);
             });
         });
 
