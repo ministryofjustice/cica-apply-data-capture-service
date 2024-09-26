@@ -2,7 +2,7 @@
 
 const applicationTemplate = require('q-templates-application');
 
-const letterTemplates = require('q-templates-letters');
+const letterTemplates = require('q-templates-actions');
 
 const applicationTemplateAsJson = JSON.stringify(applicationTemplate);
 
