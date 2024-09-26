@@ -73,7 +73,8 @@ function createQuestionnaireService({
         ownerData,
         originData,
         externalData,
-        templateVersion
+        templateVersion,
+        userData
     ) {
         const templateAsJson = await templateService.getTemplateAsJson(
             templateName,
@@ -110,6 +111,11 @@ function createQuestionnaireService({
             questionnaire.answers.system = {
                 'external-id': externalData.id
             };
+        }
+
+        if (userData) {
+            questionnaire.meta.personalisation = userData.personalisation;
+            questionnaire.answers.system['case-reference'] = userData.caseReference;
         }
 
         await db.createQuestionnaire(questionnaire.id, questionnaire);
