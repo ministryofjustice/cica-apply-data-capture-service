@@ -232,6 +232,20 @@ function createQuestionnaire({
         };
     }
 
+    function getMetadata(metadataId) {
+        const metadata = questionnaireDefinition.meta;
+
+        if (metadata !== undefined) {
+            if (metadataId !== undefined) {
+                return metadata[metadataId];
+            }
+
+            return metadata;
+        }
+
+        return undefined;
+    }
+
     function getSection(sectionId, allowSummary = true) {
         const sectionDefinition = getSectionDefinition(sectionId);
         const sectionDefinitionVars = getSectionDefinitionVars(sectionDefinition);
@@ -328,20 +342,6 @@ function createQuestionnaire({
         });
 
         return allDataAttributes;
-    }
-
-    function getMetadata(metadataId) {
-        const metadata = questionnaireDefinition.meta;
-
-        if (metadata !== undefined) {
-            if (metadataId !== undefined) {
-                return metadata[metadataId];
-            }
-
-            return metadata;
-        }
-
-        return undefined;
     }
 
     function getNormalisedDetailsForAttribute(attributeId) {
