@@ -106,6 +106,7 @@ function createQuestionnaireService({
 
         if (userData) {
             questionnaire.meta.personalisation = userData.personalisation;
+            questionnaire.answers.system = {'case-reference': userData.caseReference};
         }
 
         await db.createQuestionnaire(uuidV4, questionnaire);
