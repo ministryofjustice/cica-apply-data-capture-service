@@ -61,7 +61,8 @@ function createQuestionnaireService({
         ownerData,
         originData,
         externalData,
-        userData
+        userData,
+        instance
     ) {
         if (!(templateName in templates)) {
             throw new VError(
@@ -72,8 +73,14 @@ function createQuestionnaireService({
             );
         }
 
+        let questionnaire;
         const uuidV4 = uuidv4();
-        const questionnaire = templates[templateName](uuidV4);
+
+        if (instance) {
+            questionnaire = {id: uuidV4, ...instance};
+        } else {
+            questionnaire = templates[templateName](uuidV4);
+        }
 
         if (!ownerData) {
             throw new VError(
