@@ -286,9 +286,9 @@ function createQuestionnaire({
 
         orderedValueTransformers.push(valueInterpolator);
 
-        const meta = getMetadata();
-        if (meta?.personalisation) {
-            const metaValueInterpolator = getValueInterpolator({meta: meta});
+        const meta = {meta: getMetadata()};
+        if (meta.meta?.personalisation) {
+            const metaValueInterpolator = getValueInterpolator(meta);
             orderedValueTransformers.push(metaValueInterpolator);
         }
 
@@ -368,13 +368,13 @@ function createQuestionnaire({
                 }
             };
 
-            const meta = getMetadata();
+            const meta = {meta: getMetadata()};
 
             const permittedActions = actions.filter(action => {
                 if ('cond' in action) {
                     const isPermittedAction =
                         qExpression.evaluate(action.cond, answersAndRoles) ||
-                        qExpression.evaluate(action.cond, {meta: meta});
+                        qExpression.evaluate(action.cond, meta);
                     return isPermittedAction;
                 }
 
@@ -385,8 +385,8 @@ function createQuestionnaire({
             valueTransformers.push(jsonExpressionEvaluator);
             valueTransformers.push(valueInterpolator);
 
-            if (meta?.personalisation) {
-                const metaValueInterpolator = getValueInterpolator({meta: meta});
+            if (meta.meta?.personalisation) {
+                const metaValueInterpolator = getValueInterpolator(meta);
                 valueTransformers.push(metaValueInterpolator);
             }
 
