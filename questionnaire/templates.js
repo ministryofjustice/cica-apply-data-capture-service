@@ -23,7 +23,7 @@ function getDecisionLetterTemplateCopy() {
 }
 
 module.exports = {
-    'sexual-assault': id => ({
+    'apply-for-compensation': id => ({
         id,
         ...getApplicationTemplateCopy()
     }),
