@@ -127,7 +127,8 @@ function createQuestionnaireService({
                 },
                 context: {
                     logger,
-                    questionnaireDef: questionnaire
+                    questionnaireDef: questionnaire,
+                    type: 'onCreate'
                 }
             });
             try {
