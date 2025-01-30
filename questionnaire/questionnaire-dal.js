@@ -228,13 +228,17 @@ function questionnaireDAL(spec) {
     async function getQuestionnaireByOwner(questionnaireId) {
         let questionnaire;
 
+        console.log('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy');
         try {
+            console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
             questionnaire = await db.query(
                 "SELECT questionnaire FROM questionnaire WHERE id = $1 AND questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $2",
                 [questionnaireId, ownerId]
             );
 
+            console.log('wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww');
             if (questionnaire.rowCount === 0) {
+                console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
                 // No instance was found
                 throw new VError(
                     {
@@ -243,9 +247,12 @@ function questionnaireDAL(spec) {
                     `Questionnaire "${questionnaireId}" not found`
                 );
             }
+            console.log('uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu');
         } catch (err) {
+            console.log('tttttttttttttttttttttttttttttttttttttttttttt');
             throw err;
         }
+        console.log('sssssssssssssssssssssssssssssssssssssssssssssss');
         return questionnaire.rows[0].questionnaire;
     }
 
