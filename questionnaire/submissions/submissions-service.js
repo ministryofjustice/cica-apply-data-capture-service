@@ -72,17 +72,22 @@ function createSubmissionService({
 
     async function submit(questionnaireId) {
         try {
+            console.log('1111111111111111111111111111111111111111');
             const questionnaireDefinition = await questionnaireService.getQuestionnaire(
                 questionnaireId
             );
 
+            console.log('2222222222222222222222222222222222222222222');
             if ((await isSubmittable(questionnaireId, questionnaireDefinition)) === false) {
+                console.log('333333333333333333333333333333333333333');
                 throw Error(
                     `Questionnaire with ID "${questionnaireId}" is not in a submittable state`
                 );
             }
 
+            console.log('444444444444444444444444444444444');
             const onSubmitTaskDefinition = getOnSubmitTaskDefinitionCopy(questionnaireDefinition);
+            console.log('5555555555555555555555555555555555555');
             const taskRunner = createTaskRunner({
                 taskImplementations: {
                     sequential,
@@ -94,18 +99,22 @@ function createSubmissionService({
                 }
             });
 
+            console.log('66666666666666666666666666666666666666');
             await questionnaireService.updateQuestionnaireSubmissionStatus(
                 questionnaireId,
                 'IN_PROGRESS'
             );
 
+            console.log('7777777777777777777777777777777777777777777');
             await taskRunner.run(onSubmitTaskDefinition);
 
+            console.log('888888888888888888888888888888888888888888888');
             await questionnaireService.updateQuestionnaireSubmissionStatus(
                 questionnaireId,
                 'COMPLETED'
             );
 
+            console.log('9999999999999999999999999999999999999999999999');
             // return a submission document
             return {
                 data: {
@@ -120,33 +129,44 @@ function createSubmissionService({
                 }
             };
         } catch (err) {
+            console.log('10-10-10-10-10-10-10-10-10-10-10-10-10-10-10');
             if (err.name === 'SequentialTaskError') {
+                console.log('11-11-11-11-11-11-11-11-11-11-11-11-11-11-11');
                 await questionnaireService.updateQuestionnaireSubmissionStatus(
                     questionnaireId,
                     'FAILED'
                 );
+                console.log('12-12-12-12-12-12-12-12-12-12-12-12-12-12-12');
                 throw createAppError({
                     name: 'SubmissionError',
                     message: `Submission error for questionnaireId ${questionnaireId}`,
                     error: err
                 });
             }
+            console.log('13-13-13-13-13-13-13-13-13-13-13-13-13-13-13');
             throw err;
         }
     }
 
     async function postFailedSubmissions() {
         try {
+            console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
             const questionnaireIds = await questionnaireService.getQuestionnaireIdsBySubmissionStatus(
                 'FAILED'
             );
+            console.log('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
             const resubmittedApplications = questionnaireIds.map(async id => {
+                console.log('ccccccccccccccccccccccccccccccccccccccccccc');
                 await submit(id);
+                console.log('ddddddddddddddddddddddddddddddddddddddddddd');
                 return {id, resubmitted: true};
             });
+            console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
             return Promise.all(resubmittedApplications);
         } catch (err) {
+            console.log('ffffffffffffffffffffffffffffffffffffffffffffffffffffff');
             logger.error({err}, 'RESUBMISSION FAILED');
+            console.log('ggggggggggggggggggggggggggggggggggggggggggggggggggg');
             throw err;
         }
     }
