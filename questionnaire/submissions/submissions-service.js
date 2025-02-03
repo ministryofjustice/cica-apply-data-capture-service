@@ -144,6 +144,7 @@ function createSubmissionService({
                 });
             }
             console.log('13-13-13-13-13-13-13-13-13-13-13-13-13-13-13');
+            console.log({err});
             throw err;
         }
     }
