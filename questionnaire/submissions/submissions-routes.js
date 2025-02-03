@@ -77,10 +77,10 @@ router.route('/resubmit-failed').post(permissions('admin'), async (req, res, nex
             logger: req.log
         });
         response = await submissionService.postFailedSubmissions();
+        res.status(200).json(response);
     } catch (err) {
         next(err);
     }
-    res.status(200).json(response);
 });
 
 module.exports = router;
