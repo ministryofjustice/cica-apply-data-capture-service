@@ -231,6 +231,10 @@ function questionnaireDAL(spec) {
         console.log('yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy');
         try {
             console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+            console.log({
+                questionnaireId,
+                ownerId
+            });
             questionnaire = await db.query(
                 "SELECT questionnaire FROM questionnaire WHERE id = $1 AND questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $2",
                 [questionnaireId, ownerId]
