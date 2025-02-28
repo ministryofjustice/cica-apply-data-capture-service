@@ -93,7 +93,8 @@ function createQuestionnaireService({
 
         if (originData) {
             questionnaire.answers.origin = {
-                channel: originData.channel
+                channel: originData.channel,
+                ip: originData.ip
             };
         }
 

@@ -57,6 +57,8 @@ describe('Transform and Upload task', () => {
         expect(transformedQuestionnaire).toHaveProperty('meta');
         expect(transformedQuestionnaire.meta).toHaveProperty('channel');
         expect(transformedQuestionnaire.meta.channel).toBe('dashboard');
+        expect(transformedQuestionnaire.meta).toHaveProperty('ip');
+        expect(transformedQuestionnaire.meta.ip).toBe('0.0.0.0');
     });
 
     it('Should transform correctly if no origin is present in the answers', () => {

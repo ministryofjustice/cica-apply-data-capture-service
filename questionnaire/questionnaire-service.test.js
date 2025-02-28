@@ -31,7 +31,8 @@ const apiVersion = '2023-05-17';
 const validSubmissionStatus = 'IN_PROGRESS';
 const failedSubmissionStatus = 'FAILED';
 const originData = {
-    channel: 'telephone'
+    channel: 'telephone',
+    ip: '0.0.0.0'
 };
 
 beforeEach(() => {
@@ -283,7 +284,8 @@ describe('Questionnaire Service', () => {
                                 'is-authenticated': false
                             },
                             origin: {
-                                channel: 'telephone'
+                                channel: 'telephone',
+                                ip: '0.0.0.0'
                             }
                         }
                     })
@@ -308,7 +310,8 @@ describe('Questionnaire Service', () => {
                                 'is-authenticated': false
                             },
                             origin: {
-                                channel: 'telephone'
+                                channel: 'telephone',
+                                ip: '0.0.0.0'
                             },
                             system: {
                                 'external-id': 'urn:uuid:f81d4fae-7dec-11d0-a765-123456789123'

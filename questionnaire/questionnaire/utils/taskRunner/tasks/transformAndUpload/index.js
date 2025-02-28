@@ -155,6 +155,7 @@ function transformQuestionnaire(questionnaire) {
 
     if (answers.origin) {
         transformedQuestionnaire.meta.channel = answers.origin.channel;
+        transformedQuestionnaire.meta.ip = answers.origin.ip;
     }
 
     if (answers.owner) {

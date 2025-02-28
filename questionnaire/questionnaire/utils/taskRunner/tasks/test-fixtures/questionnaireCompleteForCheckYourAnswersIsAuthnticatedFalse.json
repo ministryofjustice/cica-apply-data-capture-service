@@ -4703,7 +4703,8 @@
             "case-reference": "19\\751194"
         },
         "origin": {
-            "channel": "dashboard"
+            "channel": "dashboard",
+            "ip": "0.0.0.0"
         },
         "owner": {
             "owner-id": "urn:A3vCv24d7c8mBNs",
