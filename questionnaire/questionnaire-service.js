@@ -8,7 +8,7 @@ const VError = require('verror');
 const router = require('q-router');
 const uuidv4 = require('uuid/v4');
 const ajvFormatsMobileUk = require('ajv-formats-mobile-uk');
-const templates = require('./templates');
+const getTemplate = require('./templates');
 const questionnaireResource = require('./resources/questionnaire-resource');
 const createQuestionnaireHelper = require('./questionnaire/questionnaire');
 const isQuestionnaireCompatible = require('./utils/isQuestionnaireVersionCompatible');
@@ -62,18 +62,15 @@ function createQuestionnaireService({
         return false;
     }
 
-    async function createQuestionnaire(templateName, ownerData, originData, externalData) {
-        if (!(templateName in templates)) {
-            throw new VError(
-                {
-                    name: 'ResourceNotFound'
-                },
-                `Template "${templateName}" does not exist`
-            );
-        }
-
+    async function createQuestionnaire(
+        templateName,
+        ownerData,
+        originData,
+        externalData,
+        templateVersion
+    ) {
         const uuidV4 = uuidv4();
-        const questionnaire = templates[templateName](uuidV4);
+        const questionnaire = getTemplate(templateName, templateVersion)(uuidV4);
 
         if (!ownerData) {
             throw new VError(
