@@ -37,7 +37,7 @@
         "pg": "^8.7.3",
         "pino-http": "^5.5.0",
         "pino-std-serializers": "^6.2.2",
-        "q-expressions": "github:CriminalInjuriesCompensationAuthority/q-expressions",
+        "q-expressions": "github:CriminalInjuriesCompensationAuthority/q-expressions#array-rules",
         "q-router": "github:CriminalInjuriesCompensationAuthority/q-router#speedbump",
         "q-templates-application": "github:CriminalInjuriesCompensationAuthority/q-templates-application#speedbump-dev-work",
         "semver": "^7.5.4",
