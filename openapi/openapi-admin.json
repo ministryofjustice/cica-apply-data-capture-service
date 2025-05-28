@@ -1,5 +1,5 @@
 {
-    "openapi": "3.0.2",
+    "openapi": "3.1.0",
     "info": {
         "title": "Data Capture Service Admin API",
         "description": "Manage admin functions for questionnaires",
@@ -22,11 +22,7 @@
             "bearerAuth": []
         }
     ],
-    "tags": [
-        {
-            "name": "Submissions"
-        }
-    ],
+    "tags": [{"name": "Submissions"}],
     "paths": {
         "/questionnaires/resubmit-failed": {
             "post": {
@@ -40,20 +36,7 @@
                         "content": {
                             "application/vnd.api+json": {
                                 "schema": {
-                                    "type": "array",
-                                    "additionalProperties": false,
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "id": {
-                                                "type": "string",
-                                                "format": "uuid"
-                                            },
-                                            "resubmitted": {
-                                                "type": "boolean"
-                                            }
-                                        }
-                                    }
+                                    "$ref": "./json-schemas/api/admin_questionnaires_resubmit-failed/post/res/200.json"
                                 },
                                 "example": [
                                     {
@@ -65,83 +48,10 @@
                         }
                     },
                     "401": {
-                        "description": "Access token is missing or invalid",
-                        "content": {
-                            "application/vnd.api+json": {
-                                "schema": {
-                                    "type": "object",
-                                    "required": ["errors"],
-                                    "properties": {
-                                        "errors": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "required": ["status", "title", "detail"],
-                                                "properties": {
-                                                    "status": {
-                                                        "enum": [401]
-                                                    },
-                                                    "title": {
-                                                        "enum": ["401 Unauthorized"]
-                                                    },
-                                                    "detail": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                "example": {
-                                    "errors": [
-                                        {
-                                            "status": 401,
-                                            "detail": "No authorization token was found"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnauthorizedError"
                     },
                     "403": {
-                        "description": "The JWT doesn't permit access to this endpoint",
-                        "content": {
-                            "application/vnd.api+json": {
-                                "schema": {
-                                    "type": "object",
-                                    "required": ["errors"],
-                                    "properties": {
-                                        "errors": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "required": ["status", "title", "detail"],
-                                                "properties": {
-                                                    "status": {
-                                                        "enum": [403]
-                                                    },
-                                                    "title": {
-                                                        "enum": ["403 Forbidden"]
-                                                    },
-                                                    "detail": {
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                "example": {
-                                    "errors": [
-                                        {
-                                            "status": 403,
-                                            "title": "403 Forbidden",
-                                            "detail": "Insufficient scope"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Forbidden"
                     }
                 }
             }
@@ -161,28 +71,7 @@
                 "content": {
                     "application/vnd.api+json": {
                         "schema": {
-                            "type": "object",
-                            "required": ["errors"],
-                            "properties": {
-                                "errors": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "required": ["status", "title", "detail"],
-                                        "properties": {
-                                            "status": {
-                                                "enum": [401]
-                                            },
-                                            "title": {
-                                                "enum": ["401 Unauthorized"]
-                                            },
-                                            "detail": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            "$ref": "./json-schemas/api/responses/401.json"
                         },
                         "example": {
                             "errors": [
@@ -200,28 +89,7 @@
                 "content": {
                     "application/vnd.api+json": {
                         "schema": {
-                            "type": "object",
-                            "required": ["errors"],
-                            "properties": {
-                                "errors": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "required": ["status", "title", "detail"],
-                                        "properties": {
-                                            "status": {
-                                                "enum": [403]
-                                            },
-                                            "title": {
-                                                "enum": ["403 Forbidden"]
-                                            },
-                                            "detail": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            "$ref": "./json-schemas/api/responses/403.json"
                         },
                         "example": {
                             "errors": [

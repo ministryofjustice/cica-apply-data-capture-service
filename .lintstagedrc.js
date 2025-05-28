@@ -1,9 +1,8 @@
 const config = {
     '*.js': ['eslint --fix --color'],
     '*.{json,yml,yaml}': ['prettier --write'],
-    './openapi/src/**/*.{js,json}': 'npm run openapi:build',
-    './openapi/openapi.json': 'speccy lint ./openapi/openapi.json',
-    './openapi/openapi-admin.json': 'speccy lint ./openapi/openapi-admin.json'
+    './openapi/openapi.json': 'npm run lint:openapi',
+    './openapi/openapi-admin.json': 'npm run lint:openapi-admin'
 };
 
 module.exports = config;
