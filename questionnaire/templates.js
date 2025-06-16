@@ -43,7 +43,7 @@ function getTemplate(templateName, version) {
                 console.log(`Installing ${moduleName}#${version} for ${templateName}...`);
                 fs.mkdirSync(installDir, {recursive: true});
 
-                execSync(`npm install ${moduleUrl}#${version} --no-save`, {
+                execSync(`npm install ${moduleUrl}#v${version} --no-save`, {
                     cwd: installDir,
                     stdio: 'inherit'
                 });

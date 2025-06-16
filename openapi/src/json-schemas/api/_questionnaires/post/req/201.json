@@ -53,6 +53,9 @@
                                     "$ref": "../../../../models/definitions/external-id.json"
                                 }
                             }
+                        },
+                        "templateVersion": {
+                            "$ref": "../../../../models/definitions/semver.json"
                         }
                     }
                 }
