@@ -8,6 +8,9 @@ USER dc_user
 # Essentially running mkdir <name> inside the current working
 # directory, and then cd <name>
 WORKDIR /usr/src/app
+RUN mkdir -p /usr/src/app/questionnaire/template-versions \
+    && chown -R dc_user:dc_user /usr/src/app/questionnaire
+
 #no chnage made
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
@@ -55,6 +58,8 @@ USER dc_user
 # Essentially running mkdir <name> inside the current working
 # directory, and then cd <name>
 WORKDIR /usr/src/app
+RUN mkdir -p /usr/src/app/questionnaire/template-versions \
+    && chown -R dc_user:dc_user /usr/src/app/questionnaire
 #no chnage made
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied

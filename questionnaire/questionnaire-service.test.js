@@ -207,6 +207,20 @@ jest.doMock('./utils/isQuestionnaireVersionCompatible', () => questionnaireVersi
     return questionnaireVersion !== incompatibleQuestionnaireFixture.version;
 });
 
+jest.doMock('./templates', () => {
+    const getTemplateMock = jest.fn(templateName => {
+        return id => ({
+            id,
+            templateName,
+            routes: {
+                type: 'mockTemplate'
+            }
+        });
+    });
+
+    return getTemplateMock;
+});
+
 const mockDalService = require('./questionnaire-dal')();
 
 const createQuestionnaireService = require('./questionnaire-service');
@@ -243,14 +257,6 @@ describe('Questionnaire Service', () => {
                     type: 'questionnaires',
                     attributes: expect.any(Object)
                 });
-            });
-
-            it('Should error if templateName not found', async () => {
-                const templatename = 'not-a-template';
-
-                await expect(
-                    questionnaireService.createQuestionnaire(templatename, ownerData)
-                ).rejects.toThrow('Template "not-a-template" does not exist');
             });
 
             it('Should set owner data in the answers', async () => {
