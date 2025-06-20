@@ -69,3 +69,6 @@ typings/
 .vscode
 
 .config
+
+# ignore any cached templates
+/questionnaire/template-versions

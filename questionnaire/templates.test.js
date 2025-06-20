@@ -44,10 +44,8 @@ describe('Templates.js', () => {
         const questionnaire = getTemplate('sexual-assault')(testId);
 
         expect(questionnaire).toMatchObject({
-            'sexual-assault': {
-                id: '123ImAnId',
-                type: 'loaded-latest'
-            }
+            id: '123ImAnId',
+            type: 'loaded-latest'
         });
     });
 
@@ -55,10 +53,8 @@ describe('Templates.js', () => {
         const questionnaire = getTemplate('sexual-assault', '12.0.0')(testId);
 
         expect(questionnaire).toMatchObject({
-            'sexual-assault': {
-                id: '123ImAnId',
-                type: 'loaded-requested'
-            }
+            id: '123ImAnId',
+            type: 'loaded-requested'
         });
     });
 

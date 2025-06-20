@@ -70,7 +70,7 @@ function createQuestionnaireService({
         templateVersion
     ) {
         const uuidV4 = uuidv4();
-        const initiateQuestionnaire = await getTemplate(templateName, templateVersion);
+        const initiateQuestionnaire = getTemplate(templateName, templateVersion);
         const questionnaire = initiateQuestionnaire(uuidV4);
 
         if (!ownerData) {
