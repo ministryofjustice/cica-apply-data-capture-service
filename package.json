@@ -7,7 +7,7 @@
     },
     "scripts": {
         "start": "node ./bin/www",
-        "start:dev": "nodemon -L -e .js,.json,.njk,.yml --ignore openapi/openapi.json --ignore openapi/openapi-admin.json --exec npm run build:run:dev",
+        "start:dev": "npm run build:run:dev",
         "openapi:build-public": "speccy lint openapi/src/openapi-src.json -j && speccy resolve ./openapi/src/openapi-src.json -j | yaml2json --pretty --indentation 4 --save - > ./openapi/openapi.json && node ./openapi/src/dereference-openapi.js",
         "openapi:build-admin": "speccy lint openapi/src/openapi-src-admin.json -j && speccy resolve ./openapi/src/openapi-src-admin.json -j | yaml2json --pretty --indentation 4 --save - > ./openapi/openapi-admin.json && node ./openapi/src/dereference-openapi-admin.js",
         "openapi:build": "npm run openapi:build-public && npm run openapi:build-admin",
@@ -37,6 +37,7 @@
         "pg": "^8.7.3",
         "pino-http": "^5.5.0",
         "pino-std-serializers": "^6.2.2",
+        "proper-lockfile": "^4.1.2",
         "q-expressions": "github:CriminalInjuriesCompensationAuthority/q-expressions#v1.1.0",
         "q-router": "github:CriminalInjuriesCompensationAuthority/q-router#v3.1.2",
         "q-templates-application": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.3.9",

@@ -5,6 +5,11 @@ RUN groupadd -g 1014 dc_user \
     && useradd -rm -d /usr/src/app -u 1015 -g dc_user dc_user
 USER dc_user
 
+# Install git (needed for npm to install from GitHub)
+RUN apt-get update && \
+    apt-get install -y git && \
+    rm -rf /var/lib/apt/lists/*
+
 # Essentially running mkdir <name> inside the current working
 # directory, and then cd <name>
 WORKDIR /usr/src/app
