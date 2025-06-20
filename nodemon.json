@@ -5,7 +5,8 @@
         ".sass-cache",
         "bower_components",
         "coverage",
-        "./node_modules/!(q-templates-application)/dist/template.json"
+        "./node_modules/!(q-templates-application)/dist/template.json",
+        "./questionnaire/template-versions"
     ],
     "watch": [
         "node_modules/q-templates-application/dist/template.json",
@@ -14,7 +15,7 @@
         "middleware",
         "openapi",
         "public",
-        "questionnaire",
+        "questionnaire/!(template-versions)",
         "services",
         "app.js"
     ]
