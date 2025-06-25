@@ -6,9 +6,9 @@ const Ajv = require('ajv');
 const AjvErrors = require('ajv-errors');
 const VError = require('verror');
 const router = require('q-router');
-const uuidv4 = require('uuid/v4');
+const crypto = require('node:crypto');
 const ajvFormatsMobileUk = require('ajv-formats-mobile-uk');
-const templates = require('./templates');
+const {templateService} = require('./templates/templates');
 const questionnaireResource = require('./resources/questionnaire-resource');
 const createQuestionnaireHelper = require('./questionnaire/questionnaire');
 const isQuestionnaireCompatible = require('./utils/isQuestionnaireVersionCompatible');
@@ -62,18 +62,21 @@ function createQuestionnaireService({
         return false;
     }
 
-    async function createQuestionnaire(templateName, ownerData, originData, externalData) {
-        if (!(templateName in templates)) {
-            throw new VError(
-                {
-                    name: 'ResourceNotFound'
-                },
-                `Template "${templateName}" does not exist`
-            );
-        }
-
-        const uuidV4 = uuidv4();
-        const questionnaire = templates[templateName](uuidV4);
+    async function createQuestionnaire(
+        templateName,
+        ownerData,
+        originData,
+        externalData,
+        templateVersion
+    ) {
+        const templateAsJson = await templateService.getTemplateAsJson(
+            templateName,
+            templateVersion
+        );
+        const questionnaire = {
+            id: crypto.randomUUID(),
+            ...JSON.parse(templateAsJson)
+        };
 
         if (!ownerData) {
             throw new VError(
@@ -103,10 +106,10 @@ function createQuestionnaireService({
             };
         }
 
-        await db.createQuestionnaire(uuidV4, questionnaire);
+        await db.createQuestionnaire(questionnaire.id, questionnaire);
 
         if (ownerData.isAuthenticated) {
-            await updateExpiryForAuthenticatedOwner(uuidV4, ownerData.id);
+            await updateExpiryForAuthenticatedOwner(questionnaire.id, ownerData.id);
         }
 
         return {
