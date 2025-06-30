@@ -208,9 +208,33 @@ function createQuestionnaireService({
         return resourceCollection;
     }
 
+    function normaliseAnswers(answers) {
+        const normalisedAnswers = {};
+        Object.entries(answers).forEach(answer => {
+            const [key, value] = answer;
+            let updatedValue = value;
+
+            if (typeof value === 'string') {
+                updatedValue = value.normalize('NFC');
+
+                // this is to avoid an issue with PDFKit which used in the application service
+                // to generate the case PDF.
+                // https://github.com/foliojs/pdfkit/issues/617
+                // https://github.com/foliojs/pdfkit/issues/263
+                updatedValue = updatedValue.replaceAll('\t', ' ');
+            }
+            normalisedAnswers[key] = updatedValue;
+        });
+
+        return normalisedAnswers;
+    }
+
     async function createAnswers(questionnaireId, sectionId, answers) {
+        let givenAnswers = answers;
+        givenAnswers = normaliseAnswers(givenAnswers);
+
         // Make a copy of the supplied answers. These will be returned if they fail validation
-        const rawAnswers = JSON.parse(JSON.stringify(answers));
+        const rawAnswers = JSON.parse(JSON.stringify(givenAnswers));
         let answerResource;
 
         try {
@@ -230,8 +254,8 @@ function createQuestionnaireService({
 
             const validate = ajv.compile(sectionSchema);
             // The AJV validate function coerces the answers and mutates the answers object
-            const valid = validate(answers);
-            const coercedAnswers = answers;
+            const valid = validate(givenAnswers);
+            const coercedAnswers = givenAnswers;
 
             if (!valid) {
                 const validationError = new VError({
