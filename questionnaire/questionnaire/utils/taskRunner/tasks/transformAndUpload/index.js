@@ -104,9 +104,16 @@ function getDeclaration(questionnaire) {
         const sectionAnswers = questionnaire.getAnswers()[declarationSectionId];
         const questionId = declarationSectionAndQuestionIds[declarationSectionId];
         const descriptionId = questionId.replace('q-', '');
-        const {description} = sectionSchema.allOf[0].properties[descriptionId];
+        let {description} = sectionSchema.allOf[0].properties[descriptionId];
         const value = sectionAnswers[questionId];
         const valueLabel = sectionSchema.allOf[1].properties[questionId].title;
+
+        if (progress.includes('p--context-paying-awards')) {
+            const payAwards = questionnaire.getSection('p--context-paying-awards').getSchema()
+                .properties['paying-awards'].description;
+            const rawDeclaration = description.replace('<div id="declaration">', '');
+            description = `<div id="declaration"> ${payAwards} ${rawDeclaration}`;
+        }
 
         return {
             type: 'simple',
