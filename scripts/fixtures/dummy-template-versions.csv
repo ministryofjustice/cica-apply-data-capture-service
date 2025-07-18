@@ -1,0 +1,6 @@
+templateName,templateVersion
+"sexual-assault","12.3.9"
+
+
+
+arn:aws:iam::754256621582:role/cica-versions-bucket-assumable-role-oidc-dev
