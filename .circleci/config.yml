@@ -64,6 +64,10 @@ jobs:
           at: ./
       - restore_cache:
           key: v1-npm-{{ checksum "package.json" }}-{{checksum "package-lock.json" }}
+      - run:
+          name: Install curl for aws-cli
+          command: |
+            apt-get update && apt-get install -y curl unzip
       - aws-cli/setup:
           role_arn: $S3_ROLE_TO_ASSUME
           region: $ECR_REGION
