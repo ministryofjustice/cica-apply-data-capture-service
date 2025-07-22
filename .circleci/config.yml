@@ -56,6 +56,29 @@ jobs:
       - run:
           name: Lint codebase
           command: npx --no-install eslint .
+  check-supported-versions:
+    docker:
+      - image: node:22.8.0-bookworm-slim
+    steps:
+      - attach_workspace:
+          at: ./
+      - restore_cache:
+          key: v1-npm-{{ checksum "package.json" }}-{{checksum "package-lock.json" }}
+      - run:
+          name: Install curl for aws-cli
+          command: |
+            apt-get update && apt-get install -y curl unzip
+      - aws-cli/setup:
+          role_arn: $S3_ROLE_TO_ASSUME
+          region: $ECR_REGION
+          profile_name: s3-profile
+      - run:
+          name: Download required files from S3
+          command: |
+            aws s3 cp s3://${TEMPLATE_VERSIONS_BUCKET_NAME}/ $CIRCLE_WORKING_DIRECTORY/. --recursive --region ${ECR_REGION} --profile s3-profile
+      - run:
+          name: Verify all active template versions are supported
+          command: npm run verify-supported-versions
   build:
     executor: docker-publisher
     steps:
@@ -230,6 +253,9 @@ workflows:
           requires:
             - build-for-test
       - lint:
+          requires:
+            - build-for-test
+      - check-supported-versions:
           requires:
             - build-for-test
       - build:
