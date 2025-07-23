@@ -141,8 +141,7 @@ jobs:
             kubectl set image -f kube_deploy/Dev/deploy.yml data-capture-service=${ECR_REGISTRY}/${ECR_REPOSITORY}:${CIRCLE_SHA1} --local -o yaml \
             | kubectl apply -f -
             kubectl apply \
-                -f kube_deploy/Dev/service.yml \
-                -f kube_deploy/Dev/ingress.yml
+                -f kube_deploy/Dev/service.yml
 
   deploy_to_uat:
     executor: docker-publisher
@@ -167,8 +166,7 @@ jobs:
             kubectl set image -f kube_deploy/Uat/deploy.yml data-capture-service=${ECR_REGISTRY}/${ECR_REPOSITORY}:${CIRCLE_SHA1} --local -o yaml \
             | kubectl apply -f -
             kubectl apply \
-                -f kube_deploy/Uat/service.yml \
-                -f kube_deploy/Uat/ingress.yml
+                -f kube_deploy/Uat/service.yml
   deploy_to_prod:
     executor: docker-publisher
     steps:
@@ -192,8 +190,7 @@ jobs:
             kubectl set image -f kube_deploy/Prod/deploy.yml data-capture-service=${ECR_REGISTRY}/${ECR_REPOSITORY}:${CIRCLE_SHA1} --local -o yaml \
             | kubectl apply -f -
             kubectl apply \
-                -f kube_deploy/Prod/service.yml \
-                -f kube_deploy/Prod/ingress.yml
+                -f kube_deploy/Prod/service.yml
 
   deploy_to_staging:
     executor: docker-publisher
@@ -218,8 +215,7 @@ jobs:
             kubectl set image -f kube_deploy/Stag/deploy.yml data-capture-service=${ECR_REGISTRY}/${ECR_REPOSITORY}:${CIRCLE_SHA1} --local -o yaml \
             | kubectl apply -f -
             kubectl apply \
-                -f kube_deploy/Stag/service.yml \
-                -f kube_deploy/Stag/ingress.yml
+                -f kube_deploy/Stag/service.yml
 
 workflows:
   version: 2
