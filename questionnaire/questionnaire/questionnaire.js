@@ -285,7 +285,9 @@ function createQuestionnaire({
             'p-rep-declaration-under-12',
             'p-rep-declaration-under-12-deceased',
             'p-rep-declaration-12-and-over',
-            'p-rep-declaration-12-and-over-deceased'
+            'p-rep-declaration-12-and-over-deceased',
+            'p-rep-declaration-no-legal-authority',
+            'p-rep-declaration-no-legal-authority-deceased'
         ];
 
         return sectionIds.filter(sectionId => sectionIdBlacklist.includes(sectionId) === false);
