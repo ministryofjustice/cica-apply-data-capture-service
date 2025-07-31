@@ -91,7 +91,9 @@ function getDeclaration(questionnaire) {
         'p-rep-declaration-under-12': 'q-rep-declaration',
         'p-rep-declaration-under-12-deceased': 'q-rep-declaration',
         'p-rep-declaration-12-and-over': 'q-rep-declaration',
-        'p-rep-declaration-12-and-over-deceased': 'q-rep-declaration'
+        'p-rep-declaration-12-and-over-deceased': 'q-rep-declaration',
+        'p-rep-declaration-no-legal-authority': 'q-rep-declaration',
+        'p-rep-declaration-no-legal-authority-deceased': 'q-rep-declaration'
     };
     const declarationSectionIds = Object.keys(declarationSectionAndQuestionIds);
     const declarationSectionId = progress.find(sectionId =>

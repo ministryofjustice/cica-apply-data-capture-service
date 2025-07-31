@@ -9,7 +9,8 @@ const supportedTemplates = {
     'sexual-assault': {
         '12.3.9': {module: 'q-templates-application-12_3_9'},
         '12.3.10': {module: 'q-templates-application-12_3_10'},
-        '12.3.11': {module: 'q-templates-application', latest: true}
+        '12.3.11': {module: 'q-templates-application-12_3_11'},
+        '12.3.12': {module: 'q-templates-application', latest: true}
     }
 };
 
