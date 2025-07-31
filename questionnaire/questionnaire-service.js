@@ -14,6 +14,7 @@ const createQuestionnaireHelper = require('./questionnaire/questionnaire');
 const isQuestionnaireCompatible = require('./utils/isQuestionnaireVersionCompatible');
 const createTaskListService = require('./task-list/task-list-service');
 const getProgress = require('./utils/getProgressArray');
+const normaliseAnswers = require('./utils/normaliseAnswers');
 
 const defaults = {};
 defaults.createQuestionnaireDAL = require('./questionnaire-dal');
@@ -209,8 +210,15 @@ function createQuestionnaireService({
     }
 
     async function createAnswers(questionnaireId, sectionId, answers) {
+        // we want to normalise the user's input ASAP to avoid any potential
+        // attack vectors. Doing it at this point means that the answers that
+        // are stored in the DB (`normalisedAnswers` -> `coercedAnswers`), and
+        // answers reported back to the client and browser (`rawAnswers`) are safe to be
+        // passed around without risk.
+        const normalisedAnswers = normaliseAnswers(answers);
+
         // Make a copy of the supplied answers. These will be returned if they fail validation
-        const rawAnswers = JSON.parse(JSON.stringify(answers));
+        const rawAnswers = JSON.parse(JSON.stringify(normalisedAnswers));
         let answerResource;
 
         try {
@@ -230,8 +238,8 @@ function createQuestionnaireService({
 
             const validate = ajv.compile(sectionSchema);
             // The AJV validate function coerces the answers and mutates the answers object
-            const valid = validate(answers);
-            const coercedAnswers = answers;
+            const valid = validate(normalisedAnswers);
+            const coercedAnswers = normalisedAnswers;
 
             if (!valid) {
                 const validationError = new VError({
