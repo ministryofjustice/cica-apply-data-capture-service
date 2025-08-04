@@ -277,7 +277,8 @@ function createQuestionnaireService({
                 data: {
                     type: 'answers',
                     id: sectionDetails.id,
-                    attributes: coercedAnswers
+                    attributes: coercedAnswers,
+                    pageContext: sectionSchema.options?.pageContext
                 }
             };
         } catch (err) {
