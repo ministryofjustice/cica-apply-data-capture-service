@@ -10,6 +10,21 @@ spec:
         app: dcs-app-uat
     spec:
       serviceAccountName: irsadcs
+      initContainers:
+        - name: verify-supported-versions
+          image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/cica/cica-repo-dev:supported-version-toolbox
+          imagePullPolicy: Always
+          env:
+            - name: DATABASE_URL_WITH_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: shared-secrets
+                  key: database_url_with_credentials
+            - name: BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: cica-versions-bucket
+                  key: bucket_name
       containers:
         - name: data-capture-service
           image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/cica/cica-repo-uat:latest

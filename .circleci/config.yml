@@ -57,32 +57,31 @@ jobs:
           name: Lint codebase
           command: npx --no-install eslint .
   check_supported_versions:
-    executor: docker-publisher
+    docker:
+      - image: amazon/aws-cli:2.17.23
+    parameters:
+      role_arn:
+        type: string
+      bucket_name:
+        type: string
     steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - attach_workspace:
+          at: ./
       - run:
-          name: Authenticate with cluster
+          name: Check that supported-template-versions.json exists
           command: |
-            echo -n ${K8S_CLUSTER_CERT} | base64 -d > ./live_ca.crt
-            kubectl config set-cluster ${K8S_CLUSTER_NAME} --certificate-authority=./live_ca.crt --server=https://${K8S_CLUSTER_NAME}
-            kubectl config set-credentials circleci --token=${K8S_TOKEN_DEV}
-            kubectl config set-context ${K8S_CLUSTER_NAME} --cluster=${K8S_CLUSTER_NAME} --user=circleci --namespace=claim-criminal-injuries-compensation-dev
-            kubectl config use-context ${K8S_CLUSTER_NAME}
-            kubectl config current-context
-            kubectl --namespace=claim-criminal-injuries-compensation-dev get pods
+            if [ ! -f "supported-template-versions.json" ]; then
+              echo "supported-template-versions.json not found. Failing build."
+              exit 1
+            fi
+      - aws-cli/setup:
+          role_arn: << parameters.role_arn >>
+          region: $ECR_REGION
+          profile_name: s3-profile
       - run:
-          name: Trigger the cronjob
+          name: Upload supported versions to S3
           command: |
-            kubectl create job --from=cronjob/claim-criminal-injuries-dev-supported-versions version-check-$(date +%s)
-      - run:
-          name: Trigger the cronjob
-          command: |
-            JOB_NAME=$(kubectl get jobs --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1:].metadata.name}')
-            echo "Waiting for job $JOB_NAME to finish..."
-            kubectl wait --for=condition=complete --timeout=300s job/$JOB_NAME || \
-            (kubectl logs job/$JOB_NAME && echo "Job failed" && exit 1)
+            aws s3 cp supported-template-versions.json s3://<< parameters.bucket_name >>/supported_template_versions.json --region ${ECR_REGION} --profile s3-profile
   build:
     executor: docker-publisher
     steps:
@@ -278,9 +277,18 @@ workflows:
           filters:
             branches:
               only: dcs-deploy-to-uat
+      - check_supported_versions:
+        name: check_supported_versions_uat
+        role_arn: $S3_ROLE_TO_ASSUME_UAT
+        bucket_name: $TEMPLATE_VERSIONS_BUCKET_NAME_UAT
+        requires:
+          - deploy_to_uat_approval
+        filters:
+          branches:
+            only: dcs-deploy-to-uat
       - deploy_to_uat:
           requires:
-            - deploy_to_uat_approval
+            - check_supported_versions_uat
           filters:
             branches:
               only: dcs-deploy-to-uat
@@ -291,9 +299,18 @@ workflows:
           filters:
             branches:
               only: dcs-deploy
+      - check_supported_versions:
+          name: check_supported_versions_dev
+          role_arn: $S3_ROLE_TO_ASSUME_DEV
+          bucket_name: $TEMPLATE_VERSIONS_BUCKET_NAME_DEV
+          requires:
+            - push_image
+          filters:
+            branches:
+              only: dcs-deploy
       - deploy_to_dev:
           requires:
-            - deploy_to_dev_approval
+            - check_supported_versions_dev
           filters:
             branches:
               only: dcs-deploy
@@ -305,9 +322,18 @@ workflows:
             branches:
               only:
                 - dcs-deploy
+      - check_supported_versions:
+        name: check_supported_versions_prod
+        role_arn: $S3_ROLE_TO_ASSUME_PROD
+        bucket_name: $TEMPLATE_VERSIONS_BUCKET_NAME_PROD
+        requires:
+          - deploy_to_prod_approval
+        filters:
+          branches:
+            only: dcs-deploy
       - deploy_to_prod:
           requires:
-            - deploy_to_prod_approval
+            - check_supported_versions_prod
           filters:
             branches:
               only:
@@ -319,9 +345,18 @@ workflows:
           filters:
             branches:
               only: dcs-deploy-to-staging
-      - deploy_to_staging:
+      - check_supported_versions:
+          name: check_supported_versions_staging
+          role_arn: $S3_ROLE_TO_ASSUME_STAG
+          bucket_name: $TEMPLATE_VERSIONS_BUCKET_NAME_STAG
           requires:
             - deploy_to_staging_approval
+          filters:
+            branches:
+              only: dcs-deploy-to-staging
+      - deploy_to_staging:
+          requires:
+            - check_supported_versions_staging
           filters:
             branches:
               only: dcs-deploy-to-staging
