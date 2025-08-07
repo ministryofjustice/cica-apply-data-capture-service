@@ -160,7 +160,7 @@ jobs:
             kubectl config use-context ${K8S_CLUSTER_NAME}
             kubectl config current-context
             kubectl --namespace=claim-criminal-injuries-compensation-dev get pods
-      - deploy:
+      - run:
           name: Deploy to the cluster
           command: |
             echo "deploy before aws ecr"
@@ -185,7 +185,7 @@ jobs:
             kubectl config use-context ${K8S_CLUSTER_NAME}
             kubectl config current-context
             kubectl --namespace=claim-criminal-injuries-compensation-uat get pods
-      - deploy:
+      - run:
           name: Deploy to the cluster
           command: |
             echo "deploy before aws ecr"
@@ -209,7 +209,7 @@ jobs:
             kubectl config use-context ${K8S_CLUSTER_NAME}
             kubectl config current-context
             kubectl --namespace=claim-criminal-injuries-compensation-prod get pods
-      - deploy:
+      - run:
           name: Deploy to the cluster
           command: |
             echo "deploy before aws ecr"
@@ -234,7 +234,7 @@ jobs:
             kubectl config use-context ${K8S_CLUSTER_NAME}
             kubectl config current-context
             kubectl --namespace=claim-criminal-injuries-compensation-stag get pods
-      - deploy:
+      - run:
           name: Deploy to the cluster
           command: |
             echo "deploy before aws ecr"
@@ -278,14 +278,14 @@ workflows:
             branches:
               only: dcs-deploy-to-uat
       - check_supported_versions:
-        name: check_supported_versions_uat
-        role_arn: $S3_ROLE_TO_ASSUME_UAT
-        bucket_name: $TEMPLATE_VERSIONS_BUCKET_NAME_UAT
-        requires:
-          - deploy_to_uat_approval
-        filters:
-          branches:
-            only: dcs-deploy-to-uat
+          name: check_supported_versions_uat
+          role_arn: $S3_ROLE_TO_ASSUME_UAT
+          bucket_name: $TEMPLATE_VERSIONS_BUCKET_NAME_UAT
+          requires:
+            - deploy_to_uat_approval
+          filters:
+            branches:
+              only: dcs-deploy-to-uat
       - deploy_to_uat:
           requires:
             - check_supported_versions_uat
@@ -323,14 +323,14 @@ workflows:
               only:
                 - dcs-deploy
       - check_supported_versions:
-        name: check_supported_versions_prod
-        role_arn: $S3_ROLE_TO_ASSUME_PROD
-        bucket_name: $TEMPLATE_VERSIONS_BUCKET_NAME_PROD
-        requires:
-          - deploy_to_prod_approval
-        filters:
-          branches:
-            only: dcs-deploy
+          name: check_supported_versions_prod
+          role_arn: $S3_ROLE_TO_ASSUME_PROD
+          bucket_name: $TEMPLATE_VERSIONS_BUCKET_NAME_PROD
+          requires:
+            - deploy_to_prod_approval
+          filters:
+            branches:
+              only: dcs-deploy
       - deploy_to_prod:
           requires:
             - check_supported_versions_prod
