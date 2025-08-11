@@ -4,19 +4,7 @@
 
 const fsSync = require('node:fs');
 const fs = require('node:fs/promises');
-
-const supportedTemplates = {
-    'sexual-assault': {
-        '12.3.9': {module: 'q-templates-application-12_3_9'},
-        '12.3.10': {module: 'q-templates-application-12_3_10'},
-        '12.3.11': {module: 'q-templates-application-12_3_11'},
-        '12.3.12': {module: 'q-templates-application-12_3_12'},
-        '12.4.0': {module: 'q-templates-application-12_4_0'},
-        '12.4.1': {module: 'q-templates-application-12_4_1'},
-        '12.4.2': {module: 'q-templates-application-12_4_2'},
-        '12.4.3': {module: 'q-templates-application', latest: true}
-    }
-};
+const supportedTemplates = require('../../supported-template-versions');
 
 function createTemplateService({templatesConfig}) {
     function exactlyOneVersionContainsLatestFlag(versions) {

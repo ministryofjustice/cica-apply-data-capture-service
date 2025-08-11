@@ -10,6 +10,17 @@ spec:
         app: dcs-app-dev
     spec:
       serviceAccountName: irsadcs
+      initContainers:
+        - name: dcs-init-checks
+          image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/cica/cica-repo-dev:latest
+          command: ['npm', 'run', 'check-supported-versions']
+          imagePullPolicy: Always
+          env:
+            - name: DATABASE_URL_WITH_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: shared-secrets
+                  key: database_url_with_credentials
       containers:
         - name: data-capture-service
           image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/cica/cica-repo-dev:latest
