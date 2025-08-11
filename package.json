@@ -16,7 +16,8 @@
         "coverage": "jest --coverage",
         "dump-eslint-conf": "eslint --print-config ./app.js > ./stuff/eslint-conf.json",
         "lint": "eslint .",
-        "lint:fix": "eslint --fix ."
+        "lint:fix": "eslint --fix .",
+        "check-supported-versions": "node ./scripts/init"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.345.0",
