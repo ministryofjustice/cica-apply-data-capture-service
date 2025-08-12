@@ -138,11 +138,11 @@ jobs:
           name: Deploy to the cluster
           command: |
             echo "deploy before aws ecr"
-            kubectl set image -f kube_deploy/Dev/deploy.yml data-capture-service=${ECR_REGISTRY}/${ECR_REPOSITORY}:${CIRCLE_SHA1} --local -o yaml \
+            kubectl set image -f kube_deploy/Dev/deploy.yml data-capture-service=${ECR_REGISTRY}/${ECR_REPOSITORY}:${CIRCLE_SHA1} dcs-init-checks=${ECR_REGISTRY}/${ECR_REPOSITORY}:${CIRCLE_SHA1}  --local -o yaml \
             | kubectl apply -f -
             kubectl apply \
                 -f kube_deploy/Dev/service.yml
-
+            kubectl rollout status deployment/dcs-app-dev --timeout=120s
   deploy_to_uat:
     executor: docker-publisher
     steps:
