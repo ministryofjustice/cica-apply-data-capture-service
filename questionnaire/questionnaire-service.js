@@ -272,13 +272,11 @@ function createQuestionnaireService({
 
             // Store the updated questionnaire object
             await db.updateQuestionnaireByOwner(questionnaireId, answeredQuestionnaire);
-
             answerResource = {
                 data: {
                     type: 'answers',
                     id: sectionDetails.id,
-                    attributes: coercedAnswers,
-                    pageContext: sectionSchema.options?.pageContext
+                    attributes: coercedAnswers
                 }
             };
         } catch (err) {
@@ -398,7 +396,8 @@ function createQuestionnaireService({
             summary: questionnaire.routes.summary,
             confirmation: questionnaire.routes.confirmation,
             pageType: questionnaire.sections[sectionId]?.schema?.meta?.pageType,
-            final: isFinalType
+            final: isFinalType,
+            options: questionnaire.sections[sectionId]?.schema.options
         };
     }
 
