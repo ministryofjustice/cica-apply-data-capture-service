@@ -131,6 +131,7 @@ router
                 req.params.sectionId,
                 answers
             );
+            console.log({response});
             res.status(201).json(response);
         } catch (err) {
             next(err);

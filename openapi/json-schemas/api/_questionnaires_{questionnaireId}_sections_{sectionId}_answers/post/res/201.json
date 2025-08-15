@@ -8,6 +8,9 @@
                 "data": {
                     "type": "object",
                     "$ref": "../../../resources/answer-resource.json"
+                },
+                "meta": {
+                    "type": "object"
                 }
             }
         }

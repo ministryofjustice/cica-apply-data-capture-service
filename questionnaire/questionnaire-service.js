@@ -396,8 +396,7 @@ function createQuestionnaireService({
             summary: questionnaire.routes.summary,
             confirmation: questionnaire.routes.confirmation,
             pageType: questionnaire.sections[sectionId]?.schema?.meta?.pageType,
-            final: isFinalType,
-            options: questionnaire.sections[sectionId]?.schema.options
+            final: isFinalType
         };
     }
 
