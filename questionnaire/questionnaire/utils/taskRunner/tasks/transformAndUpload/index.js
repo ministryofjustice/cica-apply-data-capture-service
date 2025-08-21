@@ -113,7 +113,10 @@ function getDeclaration(questionnaire) {
         if (progress.includes('p--context-paying-awards')) {
             const payAwards = questionnaire.getSection('p--context-paying-awards').getSchema()
                 .properties['paying-awards'].description;
-            const rawDeclaration = description.replace('<div id="declaration">', '');
+            const rawDeclaration = description.replace(
+                '<div id="declaration">',
+                '<h2 class="govuk-heading-m">Declaration</h2>'
+            );
             description = `<div id="declaration"> ${payAwards} ${rawDeclaration}`;
         }
 
