@@ -131,8 +131,26 @@ router
                 req.params.sectionId,
                 answers
             );
-            console.log({response});
             res.status(201).json(response);
+        } catch (err) {
+            next(err);
+        }
+    });
+
+router
+    .route('/:questionnaireId/sections/:sectionId/metadata')
+    .get(permissions('read:questionnaires'), async (req, res, next) => {
+        try {
+            const questionnaireService = createQuestionnaireService({
+                logger: req.log,
+                apiVersion: req.get('Dcs-Api-Version'),
+                ownerId: req.get('On-Behalf-Of')
+            });
+            const response = await questionnaireService.getMetadataBySectionId(
+                req.params.questionnaireId,
+                req.params.sectionId
+            );
+            res.status(200).json(response);
         } catch (err) {
             next(err);
         }

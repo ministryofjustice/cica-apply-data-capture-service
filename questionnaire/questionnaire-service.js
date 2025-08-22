@@ -166,6 +166,44 @@ function createQuestionnaireService({
         return null;
     }
 
+    function getSectionRouteBySectionId(questionnaireDefinition, sectionId) {
+        const questionnaire = createQuestionnaireHelper({questionnaireDefinition});
+        const taskListService = createTaskListService({questionnaireDefinition});
+
+        const section = questionnaire.getSection(sectionId);
+        if (taskListService.isTaskListSchema({sectionSchema: section.getSchema()})) {
+            return {};
+        }
+
+        const {states} = questionnaireDefinition.routes;
+
+        if (supportsTaskList(questionnaireDefinition)) {
+            const tasks = states;
+            const taskIds = Object.keys(tasks);
+            for (let i = 0; i < taskIds.length; i += 1) {
+                if (sectionId in tasks[taskIds[i]].states) {
+                    return tasks[taskIds[i]].states[sectionId];
+                }
+            }
+        } else if (sectionId in states) {
+            return states[sectionId];
+        }
+
+        throw new VError(`Section "${sectionId}" not found`);
+    }
+
+    function buildMetaBlock(questionnaire, sectionId) {
+        // TODO: move this meta on to the appropriate section resource
+        const sectionType = getSectionRouteBySectionId(questionnaire, sectionId).type;
+        const isFinalType = sectionType && sectionType === 'final';
+        return {
+            summary: questionnaire.routes.summary,
+            confirmation: questionnaire.routes.confirmation,
+            pageType: questionnaire.sections[sectionId]?.schema?.meta?.pageType,
+            final: isFinalType
+        };
+    }
+
     async function getSubmissionResponseData(questionnaireId) {
         const status = await getQuestionnaireSubmissionStatus(questionnaireId);
         const caseReferenceNumber = await retrieveCaseReferenceNumber(questionnaireId);
@@ -192,6 +230,19 @@ function createQuestionnaireService({
             type: 'answers',
             id: answersId,
             attributes: questionnaire.answers[answersId]
+        };
+
+        return answerResource;
+    }
+
+    function buildMetadataResource(sectionId, questionnaire) {
+        const answerResource = {
+            type: 'metadata',
+            id: sectionId,
+            attributes: {
+                ...questionnaire.sections[sectionId]?.schema?.meta,
+                ...questionnaire.sections[sectionId]?.schema?.options
+            }
         };
 
         return answerResource;
@@ -272,12 +323,14 @@ function createQuestionnaireService({
 
             // Store the updated questionnaire object
             await db.updateQuestionnaireByOwner(questionnaireId, answeredQuestionnaire);
+
             answerResource = {
                 data: {
                     type: 'answers',
                     id: sectionDetails.id,
                     attributes: coercedAnswers
-                }
+                },
+                meta: buildMetaBlock(sectionDetails.context, sectionDetails.id)
             };
         } catch (err) {
             // re-throw for the moment
@@ -359,44 +412,6 @@ function createQuestionnaireService({
             duration: sessionDuration,
             created: sessionCreatedDateMs,
             expires: sessionExpiryDate
-        };
-    }
-
-    function getSectionRouteBySectionId(questionnaireDefinition, sectionId) {
-        const questionnaire = createQuestionnaireHelper({questionnaireDefinition});
-        const taskListService = createTaskListService({questionnaireDefinition});
-
-        const section = questionnaire.getSection(sectionId);
-        if (taskListService.isTaskListSchema({sectionSchema: section.getSchema()})) {
-            return {};
-        }
-
-        const {states} = questionnaireDefinition.routes;
-
-        if (supportsTaskList(questionnaireDefinition)) {
-            const tasks = states;
-            const taskIds = Object.keys(tasks);
-            for (let i = 0; i < taskIds.length; i += 1) {
-                if (sectionId in tasks[taskIds[i]].states) {
-                    return tasks[taskIds[i]].states[sectionId];
-                }
-            }
-        } else if (sectionId in states) {
-            return states[sectionId];
-        }
-
-        throw new VError(`Section "${sectionId}" not found`);
-    }
-
-    async function buildMetaBlock(questionnaire, sectionId) {
-        // TODO: move this meta on to the appropriate section resource
-        const sectionType = getSectionRouteBySectionId(questionnaire, sectionId).type;
-        const isFinalType = sectionType && sectionType === 'final';
-        return {
-            summary: questionnaire.routes.summary,
-            confirmation: questionnaire.routes.confirmation,
-            pageType: questionnaire.sections[sectionId]?.schema?.meta?.pageType,
-            final: isFinalType
         };
     }
 
@@ -556,7 +571,7 @@ function createQuestionnaireService({
                     prev: previousProgressEntryLink
                 };
 
-                compoundDocument.meta = await buildMetaBlock(questionnaire, sectionId);
+                compoundDocument.meta = buildMetaBlock(questionnaire, sectionId);
 
                 return compoundDocument;
             }
@@ -601,6 +616,23 @@ function createQuestionnaireService({
         );
     }
 
+    async function getMetadataBySectionId(questionnaireId, sectionId) {
+        const questionnaire = await getQuestionnaire(questionnaireId);
+        const progress = getProgress(questionnaire);
+
+        if (progress.includes(sectionId)) {
+            return {
+                data: buildMetadataResource(sectionId, questionnaire)
+            };
+        }
+        throw new VError(
+            {
+                name: 'ResourceNotFound'
+            },
+            `Metadata resource "${sectionId}" does not exist for ${questionnaireId}`
+        );
+    }
+
     async function getQuestionnaireIdsBySubmissionStatus(status) {
         return db.getQuestionnaireIdsBySubmissionStatus(status);
     }
@@ -617,6 +649,7 @@ function createQuestionnaireService({
         updateQuestionnaireModifiedDate,
         getSessionResource,
         getAnswersBySectionId,
+        getMetadataBySectionId,
         updateExpiryForAuthenticatedOwner,
         getQuestionnaireIdsBySubmissionStatus
     });

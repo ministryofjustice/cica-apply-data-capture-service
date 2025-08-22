@@ -5,7 +5,8 @@
         "description": "Manage admin functions for questionnaires",
         "version": "1.0.0",
         "license": {
-            "name": "MIT"
+            "name": "MIT",
+            "url": "https://www.mit.edu/~amini/LICENSE.md"
         },
         "contact": {
             "name": "API Support",
@@ -22,7 +23,12 @@
             "bearerAuth": []
         }
     ],
-    "tags": [{"name": "Submissions"}],
+    "tags": [
+        {
+            "name": "Submissions",
+            "description": "Data and actions relating to a resubmission resource"
+        }
+    ],
     "paths": {
         "/questionnaires/resubmit-failed": {
             "post": {
@@ -41,7 +47,7 @@
                                 "example": [
                                     {
                                         "id": "2f9769b2-3fb3-481c-9a19-bb9bb71e3a86",
-                                        "submitted": true
+                                        "resubmitted": true
                                     }
                                 ]
                             }
@@ -77,6 +83,7 @@
                             "errors": [
                                 {
                                     "status": 401,
+                                    "title": "401 Unauthorized",
                                     "detail": "No authorization token was found"
                                 }
                             ]

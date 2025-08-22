@@ -5,7 +5,8 @@
         "description": "Manage a questionnaire lifecycle",
         "version": "2.0.0",
         "license": {
-            "name": "MIT"
+            "name": "MIT",
+            "url": "https://www.mit.edu/~amini/LICENSE.md"
         },
         "contact": {
             "name": "API Support",
@@ -24,22 +25,28 @@
     ],
     "tags": [
         {
-            "name": "Answers"
+            "name": "Answers",
+            "description": "Data and actions relating to a answers resource"
         },
         {
-            "name": "Questionnaires"
+            "name": "Questionnaires",
+            "description": "Data and actions relating to a questionnaire resource"
         },
         {
-            "name": "ProgressEntries"
+            "name": "ProgressEntries",
+            "description": "Data relating to the latest section of a questionnaire"
         },
         {
-            "name": "Sessions"
+            "name": "Sessions",
+            "description": "Data and actions relating to the sessions resource of a questionnaire"
         },
         {
-            "name": "Submissions"
+            "name": "Submissions",
+            "description": "Data and actions relating to the submission resource of a questionnaire"
         },
         {
-            "name": "Metadata"
+            "name": "Metadata",
+            "description": "Data and actions relating to individual areas of a questionnaire"
         }
     ],
     "paths": {
@@ -95,10 +102,14 @@
                                 "example": {
                                     "data": {
                                         "type": "questionnaires",
-                                        "id": "todo-p-some-id",
+                                        "id": "5503b02b-5f2a-42f6-bd20-6ee5845918b9",
                                         "attributes": {
-                                            "sections": {},
-                                            "routes": {}
+                                            "id": "5503b02b-5f2a-42f6-bd20-6ee5845918b9",
+                                            "type": "apply-for-compensation",
+                                            "version": "1.2.3",
+                                            "routes": {
+                                                "initial": "p-applicant-who-are-you-applying-for"
+                                            }
                                         }
                                     }
                                 }
@@ -157,7 +168,8 @@
                                             "type": "progress-entries",
                                             "id": "08dbd0d2-6cee-49e5-a55f-35b31ac4aa9e",
                                             "attributes": {
-                                                "sectionId": "p-applicant-declaration"
+                                                "sectionId": "p-applicant-declaration",
+                                                "url": null
                                             },
                                             "relationships": {
                                                 "section": {
@@ -177,15 +189,7 @@
                                             "type": "sections",
                                             "id": "p-applicant-declaration",
                                             "attributes": {
-                                                "$schema": "http://json-schema.org/draft-07/schema#",
-                                                "type": "object",
-                                                "title": "Declaration",
-                                                "additionalProperties": false,
-                                                "properties": {
-                                                    "applicant-declaration": {
-                                                        "description": "\n                <p class=\"g-body\">By continuing you confirm that the information you will give is true as far as you know.</p>\n                {{ govukWarningText({\n                    text: \"If you deliberately give false or misleading information, you may get less compensation or be prosecuted.\",\n                    iconFallbackText: \"Warning\"\n                }) }}\n            "
-                                                    }
-                                                }
+                                                "$schema": "http://json-schema.org/draft-07/schema#"
                                             },
                                             "relationships": {
                                                 "answer": {
@@ -350,6 +354,85 @@
                 }
             }
         },
+        "/questionnaires/{questionnaireId}/sections/{sectionId}/metadata": {
+            "get": {
+                "tags": ["Metadata"],
+                "summary": "Get metadata for a specified section",
+                "description": "Gets the metadata to a supplied section",
+                "operationId": "getSectionMetadata",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/questionnaireId"
+                    },
+                    {
+                        "$ref": "#/components/parameters/sectionId"
+                    },
+                    {
+                        "$ref": "#/components/parameters/onBehalfOf"
+                    },
+                    {
+                        "$ref": "#/components/parameters/apiVersion"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/vnd.api+json": {
+                                "schema": {
+                                    "$ref": "json-schemas/api/_questionnaires_{questionnaireId}_sections_{sectionId}_metadata/get/res/200.json"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "type": "metadata",
+                                            "id": "p-applicant-british-citizen-or-eu-national",
+                                            "attributes": {
+                                                "pageType": "submission",
+                                                "submitButton": {
+                                                    "text": "Agree and submit"
+                                                },
+                                                "transformOrder": [
+                                                    "q-applicant-physical-injuries-arms-muscle-other",
+                                                    "q-applicant-physical-injuries"
+                                                ],
+                                                "outputOrder": ["q-applicant-physical-injuries"],
+                                                "properties": {
+                                                    "q-applicant-physical-injuries": {
+                                                        "options": {
+                                                            "conditionalComponentMap": [
+                                                                {
+                                                                    "itemValue": "phyinj-149",
+                                                                    "componentIds": [
+                                                                        "q-applicant-physical-injuries-arms-muscle-other"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
         "/questionnaires/metadata": {
             "get": {
                 "tags": ["Metadata"],
@@ -382,7 +465,8 @@
                                                 "created": "2022-01-18T04:05:06Z",
                                                 "modified": "2022-01-18T05:05:06Z",
                                                 "submission-status": "IN_PROGRESS",
-                                                "expires": "2023-01-24T05:05:06Z"
+                                                "expires": "2023-01-24T05:05:06Z",
+                                                "external-id": "urn:uuid:f81d4fae-7dec-11d0-a765-123456781234"
                                             }
                                         }
                                     ]
@@ -440,7 +524,8 @@
                                                 "created": "2022-01-18T04:05:06Z",
                                                 "modified": "2022-01-18T05:05:06Z",
                                                 "submission-status": "IN_PROGRESS",
-                                                "expires": "2023-01-24T05:05:06Z"
+                                                "expires": "2023-01-24T05:05:06Z",
+                                                "external-id": "urn:uuid:f81d4fae-7dec-11d0-a765-123456781234"
                                             }
                                         }
                                     ]
@@ -758,6 +843,7 @@
                             "errors": [
                                 {
                                     "status": 401,
+                                    "title": "401 Unauthorized",
                                     "detail": "No authorization token was found"
                                 }
                             ]
@@ -814,7 +900,7 @@
                             "errors": [
                                 {
                                     "status": 409,
-                                    "title": "409 conflict",
+                                    "title": "409 Conflict",
                                     "detail": "Submission resource with ID \"68653be7-877f-4106-b91e-4ba8dac883f3\" already exists"
                                 }
                             ]
