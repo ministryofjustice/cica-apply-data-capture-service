@@ -4,7 +4,7 @@
 'use strict';
 
 const mockAjv = require('ajv');
-const questionnaireFixture = require('./test-fixtures/res/questionnaireCompleteWithCRN');
+const questionnaireFixture = require('./test-fixtures/res/questionnaireCompleteWithCRN.json');
 const incompatibleQuestionnaireFixture = require('./test-fixtures/res/questionnaireIncompatible');
 
 const validSectionId = 'p-applicant-enter-your-name';
@@ -50,7 +50,13 @@ jest.doMock('q-router', () => {
                     id: sectionId,
                     context: {
                         routes: {
-                            initial: sectionId
+                            initial: sectionId,
+                            states: {
+                                [sectionId]: {}
+                            }
+                        },
+                        sections: {
+                            [sectionId]: {}
                         }
                     }
                 };

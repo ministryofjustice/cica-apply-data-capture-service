@@ -175,6 +175,7 @@ function createQuestionnaireService({
             return {};
         }
 
+        console.log({questionnaireDefinition});
         const {states} = questionnaireDefinition.routes;
 
         if (supportsTaskList(questionnaireDefinition)) {
