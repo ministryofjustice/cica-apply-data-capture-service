@@ -11,7 +11,8 @@ const supportedTemplates = {
         '12.3.10': {module: 'q-templates-application-12_3_10'},
         '12.3.11': {module: 'q-templates-application-12_3_11'},
         '12.3.12': {module: 'q-templates-application-12_3_12'},
-        '12.4.0': {module: 'q-templates-application', latest: true}
+        '12.4.0': {module: 'q-templates-application-12_4_0'},
+        '12.4.1': {module: 'q-templates-application', latest: true}
     }
 };
 
