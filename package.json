@@ -37,7 +37,7 @@
         "pino-http": "^5.5.0",
         "pino-std-serializers": "^6.2.2",
         "q-expressions": "github:CriminalInjuriesCompensationAuthority/q-expressions#v1.1.0",
-        "q-router": "github:CriminalInjuriesCompensationAuthority/q-router#v3.2.0",
+        "q-router": "github:CriminalInjuriesCompensationAuthority/q-router#semver:3.2.1",
         "q-templates-application": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.4.0",
         "q-templates-application-12_3_10": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.3.10",
         "q-templates-application-12_3_11": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.3.11",
