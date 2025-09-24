@@ -15,14 +15,19 @@ function createSqsService(opts) {
      * Sends a given message to a given SQS queue
      * @param {object} payload - The json to be sent to the queue.
      * @param {string} queueUrl - The queue url.
+     * @param messageAttributes - (Optional) message attributes.
      * @returns SendMessageCommandOutput equal to the output given by the queue for the send command
      */
-    async function send(payload, queueUrl) {
+    async function send(payload, queueUrl, messageAttributes) {
         try {
             logger.info('SQS MESSAGE SENDING');
 
             const input = {QueueUrl: queueUrl}; // url needs to be in object form.
             input.MessageBody = JSON.stringify(payload);
+
+            if (messageAttributes && Object.keys(messageAttributes).length > 0) {
+                input.MessageAttributes = messageAttributes;
+            }
 
             const command = new SendMessageCommand(input);
             const response = await client.send(command);

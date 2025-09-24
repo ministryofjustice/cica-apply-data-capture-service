@@ -15,19 +15,23 @@ function createS3Service(opts) {
     const {logger} = opts;
     delete opts.logger;
 
-    async function uploadFile(jsonObj, bucketName, keyName, contentType) {
+    async function uploadFile(data, bucketName, keyName, contentType, encrypt = true) {
         try {
+            const formattedBody = contentType === 'application/json' ? JSON.stringify(data) : data;
             logger.info('Uploading to S3...');
-            const params = new PutObjectCommand({
+            const params = {
                 Bucket: bucketName,
                 Key: keyName,
-                Body: JSON.stringify(jsonObj),
-                ContentType: contentType,
-                SSEKMSKeyId: process.env.KMS_KEY_ID,
-                ServerSideEncryption: 'aws:kms'
-            });
+                Body: formattedBody,
+                ContentType: contentType
+            };
 
-            const response = await s3Cli.send(params);
+            if (encrypt) {
+                params.SSEKMSKeyId = process.env.KMS_KEY_ID;
+                params.ServerSideEncryption = 'aws:kms';
+            }
+
+            const response = await s3Cli.send(new PutObjectCommand(params));
             logger.info('Submitted to S3');
             return response;
         } catch (err) {

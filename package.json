@@ -45,6 +45,9 @@
         "q-templates-application-12_3_9": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.3.9",
         "q-templates-application-12_4_0": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.4.0",
         "q-templates-application-12_4_1": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.4.1",
+        "q-templates-review": "github:CriminalInjuriesCompensationAuthority/q-templates-review",
+        "qrcode": "1.5.4",
+        "pdfkit": "0.13.0",
         "semver": "^7.5.4",
         "swagger-ui-express": "^4.6.3",
         "verror": "^1.10.0"

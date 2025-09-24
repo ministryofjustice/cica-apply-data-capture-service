@@ -78,6 +78,11 @@ spec:
                 secretKeyRef:
                   name: shared-secrets
                   key: kta_s3_bucket
+            - name: CICA_TEST_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: cica-test-bucket
+                  key: bucket_name
             - name: KMS_KEY_ID
               valueFrom:
                 secretKeyRef:
