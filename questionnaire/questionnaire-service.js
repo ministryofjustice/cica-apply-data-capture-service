@@ -466,7 +466,7 @@ function createQuestionnaireService({
         // 1.1 check questionnaire is a compatible version
         const isCompatible = isQuestionnaireCompatible(questionnaire.version);
         // 1.2 if not, return 'incompatible questionnaire' schema
-        if (!isCompatible) {
+        if (!isCompatible && questionnaire.type !== 'request-a-review') {
             return {
                 data: [
                     {
