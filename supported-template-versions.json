@@ -25,5 +25,8 @@
             "module": "q-templates-application",
             "latest": true
         }
+    },
+    "request-a-review": {
+        "1.0.0": {"module": "q-templates-review", "latest": true}
     }
 }
