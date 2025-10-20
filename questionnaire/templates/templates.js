@@ -14,6 +14,9 @@ const supportedTemplates = {
         '12.4.0': {module: 'q-templates-application-12_4_0'},
         '12.4.1': {module: 'q-templates-application-12_4_1'},
         '12.4.2': {module: 'q-templates-application', latest: true}
+    },
+    'request-a-review': {
+        '1.0.0': {module: 'q-templates-review', latest: true}
     }
 };
 
