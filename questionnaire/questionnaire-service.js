@@ -74,50 +74,57 @@ function createQuestionnaireService({
         originData,
         externalData,
         templateVersion,
-        userData
+        userData,
+        preMadeQuestionnaire
     ) {
-        const templateAsJson = await templateService.getTemplateAsJson(
-            templateName,
-            templateVersion
-        );
-        const questionnaire = {
-            id: crypto.randomUUID(),
-            ...JSON.parse(templateAsJson)
-        };
-
-        if (!ownerData) {
-            throw new VError(
-                {
-                    name: 'OwnerNotFound'
-                },
-                `Owner data must be defined`
+        let questionnaire;
+        if (preMadeQuestionnaire === undefined) {
+            const templateAsJson = await templateService.getTemplateAsJson(
+                templateName,
+                templateVersion
             );
-        }
+            questionnaire = {
+                id: crypto.randomUUID(),
+                ...JSON.parse(templateAsJson)
+            };
 
-        questionnaire.answers = {
-            owner: {
-                'owner-id': ownerData.id,
-                'is-authenticated': ownerData.isAuthenticated
+            if (!ownerData) {
+                throw new VError(
+                    {
+                        name: 'OwnerNotFound'
+                    },
+                    `Owner data must be defined`
+                );
             }
-        };
 
-        if (originData) {
-            questionnaire.answers.origin = {
-                channel: originData.channel
+            questionnaire.answers = {
+                owner: {
+                    'owner-id': ownerData.id,
+                    'is-authenticated': ownerData.isAuthenticated
+                }
             };
-        }
 
-        if (externalData) {
-            questionnaire.answers.system = {
-                'external-id': externalData.id
-            };
-        }
+            if (originData) {
+                questionnaire.answers.origin = {
+                    channel: originData.channel
+                };
+            }
 
-        if (userData) {
-            questionnaire.meta.personalisation = userData.personalisation;
-            questionnaire.answers.system['case-reference'] = userData.caseReference;
-        }
+            if (externalData) {
+                questionnaire.answers.system = {
+                    'external-id': externalData.id
+                };
+            }
 
+            if (userData) {
+                questionnaire.meta.personalisation = userData.personalisation;
+                questionnaire.answers.system['case-reference'] = userData.caseReference;
+            }
+        } else {
+            // TODO: This will likely need some validation to reduce attack risk
+            // TODO: Not sure if we want to populate any of this with the other parameters. For now assume not
+            questionnaire = preMadeQuestionnaire;
+        }
         await db.createQuestionnaire(questionnaire.id, questionnaire);
 
         const taskImplementations = {
