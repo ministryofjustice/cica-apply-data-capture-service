@@ -19,7 +19,7 @@ const invalidAnswers = {
     'q-some-section': 'this-answer-will-not-validate-against-its-schema'
 };
 const ownerId = 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
-const templatename = 'sexual-assault';
+const templatename = 'apply-for-compensation';
 const ownerData = {
     id: ownerId,
     isAuthenticated: false

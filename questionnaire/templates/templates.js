@@ -6,7 +6,7 @@ const fsSync = require('node:fs');
 const fs = require('node:fs/promises');
 
 const supportedTemplates = {
-    'sexual-assault': {
+    'apply-for-compensation': {
         '12.3.9': {module: 'q-templates-application-12_3_9'},
         '12.3.10': {module: 'q-templates-application-12_3_10'},
         '12.3.11': {module: 'q-templates-application-12_3_11'},

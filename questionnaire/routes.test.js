@@ -171,7 +171,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                     data: {
                         type: 'questionnaires',
                         attributes: {
-                            templateName: 'sexual-assault',
+                            templateName: 'apply-for-compensation',
                             owner: {
                                 id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                 isAuthenticated: true
@@ -197,7 +197,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                     data: {
                         type: 'questionnaires',
                         attributes: {
-                            templateName: 'sexual-assault',
+                            templateName: 'apply-for-compensation',
                             owner: {
                                 id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                 isAuthenticated: true
@@ -246,7 +246,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault'
+                                templateName: 'apply-for-compensation'
                             }
                         }
                     });
@@ -267,7 +267,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -289,7 +289,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -314,7 +314,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -339,7 +339,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -362,7 +362,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -390,7 +390,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
