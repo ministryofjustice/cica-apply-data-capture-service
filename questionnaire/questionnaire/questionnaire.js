@@ -414,7 +414,8 @@ function createQuestionnaire({
         getProgress, // TODO: remove this when declaration is handled correctly
         getAnswers, // TODO: remove this when declaration is handled correctly
         getType,
-        getPermittedActions
+        getPermittedActions,
+        getMetadata
     });
 }
 
