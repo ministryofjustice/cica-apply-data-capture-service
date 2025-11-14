@@ -225,14 +225,24 @@ jest.doMock('./utils/isQuestionnaireVersionCompatible', () => questionnaireVersi
 
 const mockDalService = require('./questionnaire-dal')();
 
-const createQuestionnaireService = require('./questionnaire-service');
+jest.doMock('./templates/templates', () => ({
+    templateService: {
+        getTemplateAsJson: async (name, version) => {
+            const realTemplateService = jest.requireActual('./templates/templates');
+            const templateAsJson = await realTemplateService.templateService.getTemplateAsJson(
+                name,
+                version
+            );
+            const template = JSON.parse(templateAsJson);
+            return JSON.stringify({
+                ...template,
+                onCreate: onCreateTasks
+            });
+        }
+    }
+}));
 
-jest.mock('q-templates-application', () => {
-    return {
-        ...jest.requireActual('q-templates-application'),
-        onCreate: onCreateTasks
-    };
-});
+const createQuestionnaireService = require('./questionnaire-service');
 
 describe('Questionnaire Service', () => {
     describe('Unknown API version', () => {
