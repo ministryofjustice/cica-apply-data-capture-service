@@ -22,15 +22,15 @@ const logger = pino({
                 : 'REDACTED';
         }
     },
-    prettyPrint:
-        process.env.NODE_ENV === 'production'
-            ? false
-            : {
-                  levelFirst: true,
-                  colorize: true,
-                  translateTime: true
-                  // errorProps: 'req,res'
-              },
+    // prettyPrint:
+    //     process.env.NODE_ENV === 'production'
+    //         ? false
+    //         : {
+    //               levelFirst: true,
+    //               colorize: true,
+    //               translateTime: true
+    //               // errorProps: 'req,res'
+    //           },
     customLogLevel: (res, err) => {
         if (res.statusCode >= 400 && res.statusCode < 500) {
             return 'warn';
