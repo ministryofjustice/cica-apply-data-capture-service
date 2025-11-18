@@ -39,7 +39,7 @@ describe('logger', () => {
                 const config = pino.mock.calls[0][0];
 
                 expect(config).toHaveProperty('redact');
-                expect(config).toHaveProperty('prettyPrint');
+                expect(config).toHaveProperty('transport');
                 expect(config).toHaveProperty('customLogLevel');
             });
 
@@ -119,14 +119,12 @@ describe('logger', () => {
             });
         });
 
-        describe('prettyPrint configuration', () => {
-            it('should have correct prettyPrint configuration based on NODE_ENV at module load', () => {
+        describe('transport configuration', () => {
+            it('should have correct transport configuration based on NODE_ENV at module load', () => {
                 createLogger();
 
                 const config = pino.mock.calls[0][0];
-                // prettyPrint was evaluated when the module was loaded, not when createLogger was called
-                // So we just verify it exists and has the expected shape
-                expect(config.prettyPrint).toBeDefined();
+                expect(config.transport).toBeDefined();
             });
         });
 
@@ -232,6 +230,13 @@ describe('logger', () => {
 
         afterEach(() => {
             jest.resetModules();
+        });
+
+        afterAll(async () => {
+            // Give time for any pending logs to flush before exit
+            await new Promise(resolve => {
+                setTimeout(() => resolve(), 100);
+            });
         });
 
         it('should attach logger to request object', async () => {

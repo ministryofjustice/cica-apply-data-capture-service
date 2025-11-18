@@ -13,14 +13,16 @@ const defaults = {
                 : 'REDACTED';
         }
     },
-    prettyPrint:
+    transport:
         process.env.NODE_ENV === 'production'
-            ? false
+            ? undefined
             : {
-                  levelFirst: true,
-                  colorize: true,
-                  translateTime: true
-                  // errorProps: 'req,res'
+                  target: 'pino-pretty',
+                  options: {
+                      levelFirst: true,
+                      colorize: true,
+                      translateTime: true
+                  }
               },
     customLogLevel: (res, err) => {
         if (res.statusCode >= 500 || err) {

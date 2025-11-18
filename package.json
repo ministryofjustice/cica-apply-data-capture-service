@@ -34,7 +34,7 @@
         "json-translator": "github:CriminalInjuriesCompensationAuthority/json-translator#v2.0.0",
         "jsonpointer": "^5.0.0",
         "pg": "^8.7.3",
-        "pino-http": "^5.5.0",
+        "pino-http": "^11.0.0",
         "pino-std-serializers": "^6.2.2",
         "q-expressions": "github:CriminalInjuriesCompensationAuthority/q-expressions#v1.1.0",
         "q-router": "github:CriminalInjuriesCompensationAuthority/q-router#semver:3.2.1",
