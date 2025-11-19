@@ -217,7 +217,9 @@ describe('logger', () => {
 
             // Create a fresh app instance
             app = express();
-            app.use(createLogger());
+            // transport creates a worker thread which jest interprets as a memory leak.
+            // We don't want pretty print in prod, so forcing it to be undefined here emulates this.
+            app.use(createLogger({transport: undefined}));
 
             app.get('/test', (req, res) => {
                 res.json({message: 'test'});
@@ -230,13 +232,6 @@ describe('logger', () => {
 
         afterEach(() => {
             jest.resetModules();
-        });
-
-        afterAll(async () => {
-            // Give time for any pending logs to flush before exit
-            await new Promise(resolve => {
-                setTimeout(() => resolve(), 100);
-            });
         });
 
         it('should attach logger to request object', async () => {
