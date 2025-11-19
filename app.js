@@ -5,44 +5,12 @@ const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const path = require('path');
 const OpenApiValidator = require('express-openapi-validator');
-const pino = require('pino-http');
 const errorHandler = require('./middleware/error-handler');
 const docsRouter = require('./docs/routes');
 const questionnaireRouter = require('./questionnaire/routes');
+const logger = require('./middleware/logger');
 
 const app = express();
-const logger = pino({
-    level: process.env.DCS_LOG_LEVEL,
-    redact: {
-        paths: ['req.headers.authorization'],
-        censor: unredactedValue => {
-            const authorizationHeaderParts = unredactedValue.split('.');
-            return authorizationHeaderParts.length > 1
-                ? `Bearer REDACTED.${authorizationHeaderParts[1]}.REDACTED`
-                : 'REDACTED';
-        }
-    },
-    prettyPrint:
-        process.env.NODE_ENV === 'production'
-            ? false
-            : {
-                  levelFirst: true,
-                  colorize: true,
-                  translateTime: true
-                  // errorProps: 'req,res'
-              },
-    customLogLevel: (res, err) => {
-        if (res.statusCode >= 400 && res.statusCode < 500) {
-            return 'warn';
-        }
-
-        if (res.statusCode >= 500 || err) {
-            return 'error';
-        }
-
-        return 'info';
-    }
-});
 
 app.use(
     helmet({
@@ -62,7 +30,7 @@ app.use(
 );
 
 // logging
-app.use(logger);
+app.use(logger());
 // https://expressjs.com/en/api.html#express.json
 app.use(express.json({type: 'application/vnd.api+json'}));
 // https://expressjs.com/en/api.html#express.urlencoded
