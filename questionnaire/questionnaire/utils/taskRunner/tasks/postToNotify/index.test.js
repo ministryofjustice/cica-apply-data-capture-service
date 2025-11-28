@@ -86,7 +86,8 @@ describe('Post to Notify task', () => {
             emailAddress: 'foo@bar.com',
             personalisation: {
                 caseReference: '12/34567',
-                content: undefined
+                content: undefined,
+                questionnaireId: 'db68a9c1-1bb3-4749-bbe1-85eecce945dc'
             }
         });
     });
