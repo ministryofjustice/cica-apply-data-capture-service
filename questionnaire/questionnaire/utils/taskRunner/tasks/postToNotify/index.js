@@ -20,7 +20,8 @@ async function sendNotifyMessageToSQS({questionnaire, logger, type}) {
                         emailAddress: action.data.emailAddress,
                         personalisation: {
                             caseReference: action.data.personalisation?.caseReference,
-                            content: action.data.personalisation?.content
+                            content: action.data.personalisation?.content,
+                            questionnaireId: type === 'onCreate' ? questionnaireId : undefined
                         },
                         reference: null
                     };
@@ -36,7 +37,8 @@ async function sendNotifyMessageToSQS({questionnaire, logger, type}) {
                         phoneNumber: action.data.phoneNumber,
                         personalisation: {
                             caseReference: action.data.personalisation?.caseReference,
-                            content: action.data.personalisation?.content
+                            content: action.data.personalisation?.content,
+                            questionnaireId: type === 'onCreate' ? questionnaireId : undefined
                         },
                         reference: null
                     };
