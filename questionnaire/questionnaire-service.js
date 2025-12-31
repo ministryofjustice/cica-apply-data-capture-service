@@ -649,6 +649,21 @@ function createQuestionnaireService({
         return db.getQuestionnaireIdsBySubmissionStatus(status);
     }
 
+    async function getPersonalisationData(questionnaireId) {
+        const questionnaire = await getQuestionnaire(questionnaireId);
+        const personalisationData = questionnaire.meta.personalisation;
+        const response = {
+            data: {
+                id: questionnaireId,
+                type: 'personalisationData',
+                attributes: {
+                    ...personalisationData
+                }
+            }
+        };
+        return response;
+    }
+
     return Object.freeze({
         createQuestionnaire,
         createAnswers,
@@ -662,7 +677,8 @@ function createQuestionnaireService({
         getSessionResource,
         getAnswersBySectionId,
         updateExpiryForAuthenticatedOwner,
-        getQuestionnaireIdsBySubmissionStatus
+        getQuestionnaireIdsBySubmissionStatus,
+        getPersonalisationData
     });
 }
 

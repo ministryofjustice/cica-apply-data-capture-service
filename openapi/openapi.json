@@ -656,6 +656,64 @@
                     }
                 }
             }
+        },
+        "/questionnaires/{questionnaireId}/personalisation-data": {
+            "get": {
+                "tags": ["personalisationData"],
+                "summary": "Get personalisation data for a questionnaire.",
+                "description": "Gets all personalisation data for a questionnaire. Returns undefined if none found.",
+                "operationId": "getPersonalisationData",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/questionnaireId"
+                    },
+                    {
+                        "$ref": "#/components/parameters/onBehalfOf"
+                    },
+                    {
+                        "$ref": "#/components/parameters/apiVersion"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/vnd.api+json": {
+                                "schema": {
+                                    "$ref": "json-schemas/api/_questionnaires_{questionnaireId}_metadata/get/res/200.json"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "type": "personalisationData",
+                                            "id": "c90319ef-c193-4c9e-9a95-22121848a723",
+                                            "attributes": {
+                                                "questionnaire-id": "c90319ef-c193-4c9e-9a95-22121848a723",
+                                                "created": "2022-01-18T04:05:06Z",
+                                                "modified": "2022-01-18T05:05:06Z",
+                                                "submission-status": "IN_PROGRESS",
+                                                "expires": "2023-01-24T05:05:06Z"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
         }
     },
     "components": {

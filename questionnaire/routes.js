@@ -184,4 +184,23 @@ router
         }
     });
 
+router
+    .route('/:questionnaireId/personalisation-data')
+    .get(permissions('read:questionnaires'), async (req, res, next) => {
+        try {
+            const questionnaireService = createQuestionnaireService({
+                logger: req.log,
+                apiVersion: req.get('Dcs-Api-Version'),
+                ownerId: req.get('On-Behalf-Of')
+            });
+            const response = await questionnaireService.getPersonalisationData(
+                req.params.questionnaireId
+            );
+            res.status(200).json(response);
+        } catch (err) {
+            console.log(err);
+            next(err);
+        }
+    });
+
 module.exports = router;
