@@ -657,12 +657,12 @@
                 }
             }
         },
-        "/questionnaires/{questionnaireId}/personalisation-data": {
+        "/questionnaires/{questionnaireId}/template-metadata": {
             "get": {
-                "tags": ["personalisationData"],
-                "summary": "Get personalisation data for a questionnaire.",
-                "description": "Gets all personalisation data for a questionnaire. Returns undefined if none found.",
-                "operationId": "getPersonalisationData",
+                "tags": ["templateMetadata"],
+                "summary": "Get template metadata for a questionnaire.",
+                "description": "Gets all template metadata for a questionnaire. Returns undefined if none found.",
+                "operationId": "getTemplateMetadata",
                 "parameters": [
                     {
                         "$ref": "#/components/parameters/questionnaireId"
@@ -688,11 +688,17 @@
                                             "type": "personalisationData",
                                             "id": "c90319ef-c193-4c9e-9a95-22121848a723",
                                             "attributes": {
-                                                "questionnaire-id": "c90319ef-c193-4c9e-9a95-22121848a723",
-                                                "created": "2022-01-18T04:05:06Z",
-                                                "modified": "2022-01-18T05:05:06Z",
-                                                "submission-status": "IN_PROGRESS",
-                                                "expires": "2023-01-24T05:05:06Z"
+                                                "personalisation": {
+                                                    "questionnaire-id": "c90319ef-c193-4c9e-9a95-22121848a723",
+                                                    "first-name": "test",
+                                                    "last-name": "testcase"
+                                                },
+                                                "summaryBlocks": {
+                                                    "read": {
+                                                        "condition": "unopened",
+                                                        "link": "<a>click here</a>"
+                                                    }
+                                                }
                                             }
                                         }
                                     ]

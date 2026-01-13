@@ -185,7 +185,7 @@ router
     });
 
 router
-    .route('/:questionnaireId/personalisation-data')
+    .route('/:questionnaireId/template-metadata')
     .get(permissions('read:questionnaires'), async (req, res, next) => {
         try {
             const questionnaireService = createQuestionnaireService({
@@ -193,7 +193,7 @@ router
                 apiVersion: req.get('Dcs-Api-Version'),
                 ownerId: req.get('On-Behalf-Of')
             });
-            const response = await questionnaireService.getPersonalisationData(
+            const response = await questionnaireService.getTemplateMetadata(
                 req.params.questionnaireId
             );
             res.status(200).json(response);
