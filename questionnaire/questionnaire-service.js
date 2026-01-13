@@ -649,15 +649,17 @@ function createQuestionnaireService({
         return db.getQuestionnaireIdsBySubmissionStatus(status);
     }
 
-    async function getPersonalisationData(questionnaireId) {
+    async function getTemplateMetadata(questionnaireId) {
         const questionnaire = await getQuestionnaire(questionnaireId);
         const personalisationData = questionnaire.meta.personalisation;
+        const {summaryBlocks} = questionnaire.meta;
         const response = {
             data: {
                 id: questionnaireId,
                 type: 'personalisationData',
                 attributes: {
-                    ...personalisationData
+                    personalisation: {...personalisationData},
+                    summaryBlocks: {...summaryBlocks}
                 }
             }
         };
@@ -678,7 +680,7 @@ function createQuestionnaireService({
         getAnswersBySectionId,
         updateExpiryForAuthenticatedOwner,
         getQuestionnaireIdsBySubmissionStatus,
-        getPersonalisationData
+        getTemplateMetadata
     });
 }
 
