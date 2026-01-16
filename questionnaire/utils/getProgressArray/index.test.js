@@ -54,6 +54,15 @@ const multiTaskTemplate = {
                 initial: 'p-page-three',
                 progress: ['p-page-three'],
                 currentSectionId: 'p-page-three'
+            },
+            'C__applicability-status': {
+                id: 'C_applicability-status',
+                states: {
+                    applicable: {}
+                },
+                initial: 'inApplicable',
+                progress: ['notApplicable, applicable'],
+                currentSectionId: 'applicable'
             }
         },
         summary: ['foobar'],
@@ -83,6 +92,12 @@ describe('getProgress', () => {
 
     it('should filter states that are not valid page Ids', () => {
         multiTaskTemplate.routes.states.C.progress[0] = 'complete';
+        expect(getProgress(multiTaskTemplate)).toEqual(['p-page-one', 'p-page-two']);
+    });
+
+    it('should filter out states that belong to inapplicable tasks', () => {
+        multiTaskTemplate.routes.states['C__applicability-status'].currentSectionId =
+            'notApplicable';
         expect(getProgress(multiTaskTemplate)).toEqual(['p-page-one', 'p-page-two']);
     });
 });

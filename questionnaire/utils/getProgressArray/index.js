@@ -7,7 +7,13 @@ function getProgress(questionnaireDefinition) {
     ) {
         const progress = [];
         Object.keys(questionnaireDefinition.routes.states).forEach(task => {
-            progress.push(...questionnaireDefinition.routes.states[task].progress);
+            const taskApplicabilityStatus = `${task}__applicability-status`;
+            if (
+                questionnaireDefinition.routes.states[taskApplicabilityStatus]?.currentSectionId !==
+                'notApplicable'
+            ) {
+                progress.push(...questionnaireDefinition.routes.states[task].progress);
+            }
         });
 
         // Filter out unwanted states, e.g. "completed", "notApplicable", etc
