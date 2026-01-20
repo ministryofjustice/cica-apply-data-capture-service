@@ -353,6 +353,28 @@ describe('questionnaire data access layer', () => {
         });
     });
 
+    describe('getTemplateMetadataByOwner', () => {
+        const query = `SELECT id, questionnaire -> 'meta' AS "meta" FROM questionnaire WHERE questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $1`;
+        it('Should run a get template metadata query and filter by owner', async () => {
+            const questionnaireDAL = createQuestionnaireDAL({logger: jest.fn(), ownerId});
+            await questionnaireDAL.getTemplateMetadataByOwner();
+
+            expect(mockedDbService.query).toHaveBeenCalledTimes(1);
+            expect(mockedDbService.query).toHaveBeenCalledWith(query, [ownerId]);
+        });
+
+        it('Should handle errors gracefully', async () => {
+            const questionnaireDAL = createQuestionnaireDAL({
+                logger: jest.fn(),
+                ownerId: dbQueryErrorOwnerId
+            });
+
+            await expect(questionnaireDAL.getTemplateMetadataByOwner()).rejects.toThrow(
+                'DB_QUERY_ERROR'
+            );
+        });
+    });
+
     describe('updateExpiryForAuthenticatedOwner', () => {
         const query =
             "UPDATE questionnaire SET expires = date_trunc('day', created) + INTERVAL '31 days' WHERE id = $1 AND questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $2";

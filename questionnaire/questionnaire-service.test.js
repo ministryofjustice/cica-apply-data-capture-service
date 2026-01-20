@@ -49,6 +49,16 @@ const onCreateTasks = {
         }
     ]
 };
+const letterMetadata = {
+    personalisation: {
+        'first-name': 'test',
+        'last-name': 'testcase'
+    },
+    summaryBlocks: {
+        read: {},
+        're-read': {}
+    }
+};
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -213,6 +223,9 @@ jest.doMock('./questionnaire-dal', () => {
         }),
         getQuestionnaireIdsBySubmissionStatus: jest.fn(() => {
             return 'ok!';
+        }),
+        getTemplateMetadataByOwner: jest.fn(() => {
+            return [{id: validQuestionnaireId, meta: letterMetadata}];
         })
     };
 
@@ -747,6 +760,39 @@ describe('Questionnaire Service', () => {
                     mockDalService.updateQuestionnaireSubmissionStatusByOwner
                 ).toHaveBeenCalledWith(validQuestionnaireId, validSubmissionStatus);
                 expect(mockDalService.updateQuestionnaireSubmissionStatus).not.toHaveBeenCalled();
+            });
+        });
+        describe('getTemplateMetadataById', () => {
+            it('Should return a template metadata resource', async () => {
+                const actual = await questionnaireService.getTemplateMetadataById(
+                    validQuestionnaireId
+                );
+
+                expect(actual.data).toMatchObject({
+                    id: validQuestionnaireId,
+                    type: 'templateMetadata',
+                    attributes: {
+                        personalisation: expect.any(Object),
+                        summaryBlocks: expect.any(Object)
+                    }
+                });
+            });
+        });
+        describe('getTemplateMetadata', () => {
+            it('Should return an array of template metadata resources', async () => {
+                const actual = await questionnaireService.getTemplateMetadata();
+                console.log(actual);
+
+                expect(actual.data).toEqual([
+                    {
+                        id: validQuestionnaireId,
+                        type: 'templateMetadata',
+                        attributes: {
+                            personalisation: expect.any(Object),
+                            summaryBlocks: expect.any(Object)
+                        }
+                    }
+                ]);
             });
         });
     });
