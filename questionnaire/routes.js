@@ -193,9 +193,26 @@ router
                 apiVersion: req.get('Dcs-Api-Version'),
                 ownerId: req.get('On-Behalf-Of')
             });
-            const response = await questionnaireService.getTemplateMetadata(
+            const response = await questionnaireService.getTemplateMetadataById(
                 req.params.questionnaireId
             );
+            res.status(200).json(response);
+        } catch (err) {
+            console.log(err);
+            next(err);
+        }
+    });
+
+router
+    .route('/template-metadata')
+    .get(permissions('read:questionnaires'), async (req, res, next) => {
+        try {
+            const questionnaireService = createQuestionnaireService({
+                logger: req.log,
+                apiVersion: req.get('Dcs-Api-Version'),
+                ownerId: req.get('On-Behalf-Of')
+            });
+            const response = await questionnaireService.getTemplateMetadata();
             res.status(200).json(response);
         } catch (err) {
             console.log(err);
