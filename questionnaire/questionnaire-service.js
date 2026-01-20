@@ -649,14 +649,14 @@ function createQuestionnaireService({
         return db.getQuestionnaireIdsBySubmissionStatus(status);
     }
 
-    async function getTemplateMetadata(questionnaireId) {
+    async function getTemplateMetadataById(questionnaireId) {
         const questionnaire = await getQuestionnaire(questionnaireId);
         const personalisationData = questionnaire.meta.personalisation;
         const {summaryBlocks} = questionnaire.meta;
         const response = {
             data: {
                 id: questionnaireId,
-                type: 'personalisationData',
+                type: 'templateMetadata',
                 attributes: {
                     personalisation: {...personalisationData},
                     summaryBlocks: {...summaryBlocks}
@@ -664,6 +664,25 @@ function createQuestionnaireService({
             }
         };
         return response;
+    }
+
+    async function getTemplateMetadata() {
+        const results = await db.getTemplateMetadataByOwner();
+        const metadata = results.map(data => {
+            const personalisationData = data.meta.personalisation;
+            const {summaryBlocks} = data.meta;
+            return {
+                type: 'templateMetadata',
+                id: data.id,
+                attributes: {
+                    personalisation: {...personalisationData},
+                    summaryBlocks: {...summaryBlocks}
+                }
+            };
+        });
+        return {
+            data: metadata
+        };
     }
 
     return Object.freeze({
@@ -680,7 +699,8 @@ function createQuestionnaireService({
         getAnswersBySectionId,
         updateExpiryForAuthenticatedOwner,
         getQuestionnaireIdsBySubmissionStatus,
-        getTemplateMetadata
+        getTemplateMetadata,
+        getTemplateMetadataById
     });
 }
 

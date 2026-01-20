@@ -286,6 +286,20 @@ function questionnaireDAL(spec) {
         return result.rowCount ? result.rows : [];
     }
 
+    async function getTemplateMetadataByOwner() {
+        let result;
+        try {
+            result = await db.query(
+                `SELECT id, questionnaire -> 'meta' AS "meta" FROM questionnaire WHERE questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $1`,
+                [ownerId]
+            );
+        } catch (err) {
+            throw err;
+        }
+
+        return result.rowCount ? result.rows : [];
+    }
+
     async function getQuestionnaireMetadataByOwner(questionnaireId) {
         let result;
         try {
@@ -388,7 +402,8 @@ function questionnaireDAL(spec) {
         updateExpiryForAuthenticatedOwner,
         updateQuestionnaireModifiedDateByOwner,
         getQuestionnaireSubmissionStatusByOwner,
-        updateQuestionnaireSubmissionStatusByOwner
+        updateQuestionnaireSubmissionStatusByOwner,
+        getTemplateMetadataByOwner
     });
 }
 

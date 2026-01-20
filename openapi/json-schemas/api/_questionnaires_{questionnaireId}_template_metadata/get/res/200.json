@@ -6,7 +6,7 @@
         {
             "properties": {
                 "data": {
-                    "type": "object"
+                    "$ref": "../../../resources/template-metadata-resource.json"
                 }
             }
         }

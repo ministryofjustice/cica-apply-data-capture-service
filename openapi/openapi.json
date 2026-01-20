@@ -657,12 +657,72 @@
                 }
             }
         },
+        "/questionnaires/template-metadata": {
+            "get": {
+                "tags": ["templateMetadata"],
+                "summary": "Get the template metadata associated with all questionnaires for an owner",
+                "description": "Gets all template metadata. The results are filtered by owner.",
+                "operationId": "getTemplateMetadata",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/onBehalfOf"
+                    },
+                    {
+                        "$ref": "#/components/parameters/apiVersion"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/vnd.api+json": {
+                                "schema": {
+                                    "$ref": "json-schemas/api/_questionnaires_metadata/get/res/200.json"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "type": "templateMetadata",
+                                            "id": "2b5354a4-8a5e-45f2-97c4-e8adbcafc3bc",
+                                            "attributes": {
+                                                "personalisation": {
+                                                    "first-name": "test",
+                                                    "last-name": "testcase"
+                                                },
+                                                "summaryBlocks": {
+                                                    "read": {
+                                                        "condition": "unopened",
+                                                        "link": "<a>click here</a>"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
         "/questionnaires/{questionnaireId}/template-metadata": {
             "get": {
                 "tags": ["templateMetadata"],
                 "summary": "Get template metadata for a questionnaire.",
                 "description": "Gets all template metadata for a questionnaire. Returns undefined if none found.",
-                "operationId": "getTemplateMetadata",
+                "operationId": "getQuestionnaireTemplateMetadata",
                 "parameters": [
                     {
                         "$ref": "#/components/parameters/questionnaireId"
@@ -683,25 +743,22 @@
                                     "$ref": "json-schemas/api/_questionnaires_{questionnaireId}_metadata/get/res/200.json"
                                 },
                                 "example": {
-                                    "data": [
-                                        {
-                                            "type": "personalisationData",
-                                            "id": "c90319ef-c193-4c9e-9a95-22121848a723",
-                                            "attributes": {
-                                                "personalisation": {
-                                                    "questionnaire-id": "c90319ef-c193-4c9e-9a95-22121848a723",
-                                                    "first-name": "test",
-                                                    "last-name": "testcase"
-                                                },
-                                                "summaryBlocks": {
-                                                    "read": {
-                                                        "condition": "unopened",
-                                                        "link": "<a>click here</a>"
-                                                    }
+                                    "data": {
+                                        "type": "templateMetadata",
+                                        "id": "c90319ef-c193-4c9e-9a95-22121848a723",
+                                        "attributes": {
+                                            "personalisation": {
+                                                "first-name": "test",
+                                                "last-name": "testcase"
+                                            },
+                                            "summaryBlocks": {
+                                                "read": {
+                                                    "condition": "unopened",
+                                                    "link": "<a>click here</a>"
                                                 }
                                             }
                                         }
-                                    ]
+                                    }
                                 }
                             }
                         }
