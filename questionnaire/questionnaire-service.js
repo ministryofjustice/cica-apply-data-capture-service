@@ -119,6 +119,8 @@ function createQuestionnaireService({
             if (userData) {
                 questionnaire.meta.personalisation = userData.personalisation;
                 questionnaire.answers.system['case-reference'] = userData.caseReference;
+                questionnaire.answers.system['expiry-date'] =
+                    userData.personalisation['expiry-date'];
             }
         } else {
             // TODO: This will likely need some validation to reduce attack risk
