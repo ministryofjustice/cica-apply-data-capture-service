@@ -5,7 +5,8 @@
         "description": "Manage a questionnaire lifecycle",
         "version": "2.0.0",
         "license": {
-            "name": "MIT"
+            "name": "MIT",
+            "identifier": "MIT"
         },
         "contact": {
             "name": "API Support",
@@ -24,22 +25,28 @@
     ],
     "tags": [
         {
-            "name": "Answers"
+            "name": "Answers",
+            "description": "Creating and retrieving answers within questionnaire sections"
         },
         {
-            "name": "Questionnaires"
+            "name": "Questionnaires",
+            "description": "Creating and managing questionnaires from templates and existing data"
         },
         {
-            "name": "ProgressEntries"
+            "name": "ProgressEntries",
+            "description": "Retrieving and filtering progress entries associated with questionnaire"
         },
         {
-            "name": "Sessions"
+            "name": "Sessions",
+            "description": "Managing and refreshing session state for questionnaire owners"
         },
         {
-            "name": "Submissions"
+            "name": "Submissions",
+            "description": "Handling questionnaire submission state."
         },
         {
-            "name": "Metadata"
+            "name": "Metadata",
+            "description": "Accessing metadata for questionnaires."
         }
     ],
     "paths": {
@@ -95,10 +102,14 @@
                                 "example": {
                                     "data": {
                                         "type": "questionnaires",
-                                        "id": "todo-p-some-id",
+                                        "id": "p-some-id",
                                         "attributes": {
-                                            "sections": {},
-                                            "routes": {}
+                                            "id": "08dbd0d2-6cee-49e5-a55f-35b31ac4aa9e",
+                                            "type": "motor-accident",
+                                            "version": "1.0.0",
+                                            "routes": {
+                                                "initial": "p-some-id"
+                                            }
                                         }
                                     }
                                 }
@@ -157,7 +168,8 @@
                                             "type": "progress-entries",
                                             "id": "08dbd0d2-6cee-49e5-a55f-35b31ac4aa9e",
                                             "attributes": {
-                                                "sectionId": "p-applicant-declaration"
+                                                "sectionId": "p-applicant-declaration",
+                                                "url": ""
                                             },
                                             "relationships": {
                                                 "section": {
@@ -178,9 +190,7 @@
                                             "id": "p-applicant-declaration",
                                             "attributes": {
                                                 "$schema": "http://json-schema.org/draft-07/schema#",
-                                                "type": "object",
                                                 "title": "Declaration",
-                                                "additionalProperties": false,
                                                 "properties": {
                                                     "applicant-declaration": {
                                                         "description": "\n                <p class=\"g-body\">By continuing you confirm that the information you will give is true as far as you know.</p>\n                {{ govukWarningText({\n                    text: \"If you deliberately give false or misleading information, you may get less compensation or be prosecuted.\",\n                    iconFallbackText: \"Warning\"\n                }) }}\n            "
@@ -382,7 +392,8 @@
                                                 "created": "2022-01-18T04:05:06Z",
                                                 "modified": "2022-01-18T05:05:06Z",
                                                 "submission-status": "IN_PROGRESS",
-                                                "expires": "2023-01-24T05:05:06Z"
+                                                "expires": "2023-01-24T05:05:06Z",
+                                                "external-id": "urn:uuid:5c3a65f5-97e3-4b09-a1cb-7c611ff9ff79"
                                             }
                                         }
                                     ]
@@ -440,7 +451,8 @@
                                                 "created": "2022-01-18T04:05:06Z",
                                                 "modified": "2022-01-18T05:05:06Z",
                                                 "submission-status": "IN_PROGRESS",
-                                                "expires": "2023-01-24T05:05:06Z"
+                                                "expires": "2023-01-24T05:05:06Z",
+                                                "external-id": "urn:uuid:5c3a65f5-97e3-4b09-a1cb-7c611ff9ff77"
                                             }
                                         }
                                     ]
@@ -758,7 +770,8 @@
                             "errors": [
                                 {
                                     "status": 401,
-                                    "detail": "No authorization token was found"
+                                    "detail": "No authorization token was found",
+                                    "title": "401 Unauthorized"
                                 }
                             ]
                         }
@@ -814,7 +827,7 @@
                             "errors": [
                                 {
                                     "status": 409,
-                                    "title": "409 conflict",
+                                    "title": "409 Conflict",
                                     "detail": "Submission resource with ID \"68653be7-877f-4106-b91e-4ba8dac883f3\" already exists"
                                 }
                             ]

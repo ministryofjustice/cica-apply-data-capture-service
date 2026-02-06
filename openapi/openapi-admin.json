@@ -5,7 +5,8 @@
         "description": "Manage admin functions for questionnaires",
         "version": "1.0.0",
         "license": {
-            "name": "MIT"
+            "name": "MIT",
+            "identifier": "MIT"
         },
         "contact": {
             "name": "API Support",
@@ -22,7 +23,7 @@
             "bearerAuth": []
         }
     ],
-    "tags": [{"name": "Submissions"}],
+    "tags": [{"name": "Submissions", "description": "Submitting any questionnare"}],
     "paths": {
         "/questionnaires/resubmit-failed": {
             "post": {
@@ -41,7 +42,7 @@
                                 "example": [
                                     {
                                         "id": "2f9769b2-3fb3-481c-9a19-bb9bb71e3a86",
-                                        "submitted": true
+                                        "resubmitted": true
                                     }
                                 ]
                             }
@@ -77,7 +78,8 @@
                             "errors": [
                                 {
                                     "status": 401,
-                                    "detail": "No authorization token was found"
+                                    "detail": "No authorization token was found",
+                                    "title": "401 Unauthorized"
                                 }
                             ]
                         }
