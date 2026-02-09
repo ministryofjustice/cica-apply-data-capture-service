@@ -105,7 +105,7 @@
                                         "id": "p-some-id",
                                         "attributes": {
                                             "id": "08dbd0d2-6cee-49e5-a55f-35b31ac4aa9e",
-                                            "type": "motor-accident",
+                                            "type": "questionnaires",
                                             "version": "1.0.0",
                                             "routes": {
                                                 "initial": "p-some-id"
