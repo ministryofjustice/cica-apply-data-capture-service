@@ -68,7 +68,7 @@ function createQuestionnaireService({
         return false;
     }
 
-    async function createQuestionnaire(
+    async function createQuestionnaire({
         templateName,
         ownerData,
         originData,
@@ -76,7 +76,7 @@ function createQuestionnaireService({
         templateVersion,
         userData,
         preMadeQuestionnaire
-    ) {
+    }) {
         let questionnaire;
         if (preMadeQuestionnaire === undefined) {
             const templateAsJson = await templateService.getTemplateAsJson(
@@ -153,7 +153,7 @@ function createQuestionnaireService({
             }
         }
 
-        if (ownerData.isAuthenticated) {
+        if (ownerData?.isAuthenticated) {
             await updateExpiryForAuthenticatedOwner(questionnaire.id, ownerData.id);
         }
 

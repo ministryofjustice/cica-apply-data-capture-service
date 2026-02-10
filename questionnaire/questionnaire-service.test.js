@@ -19,7 +19,7 @@ const invalidAnswers = {
     'q-some-section': 'this-answer-will-not-validate-against-its-schema'
 };
 const ownerId = 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6';
-const templatename = 'apply-for-compensation';
+const templateName = 'apply-for-compensation';
 const ownerData = {
     id: ownerId,
     isAuthenticated: false
@@ -283,10 +283,10 @@ describe('Questionnaire Service', () => {
         });
         describe('createQuestionnaire', () => {
             it('Should create a questionnaire', async () => {
-                const actual = await questionnaireService.createQuestionnaire(
-                    templatename,
+                const actual = await questionnaireService.createQuestionnaire({
+                    templateName,
                     ownerData
-                );
+                });
 
                 expect(actual.data).toMatchObject({
                     id: expect.any(String),
@@ -296,15 +296,15 @@ describe('Questionnaire Service', () => {
             });
 
             it('Should error if templateName not found', async () => {
-                const templatename = 'not-a-template';
+                const templateName = 'not-a-template';
 
                 await expect(
-                    questionnaireService.createQuestionnaire(templatename, ownerData)
+                    questionnaireService.createQuestionnaire({templateName, ownerData})
                 ).rejects.toThrow('Template "not-a-template" does not exist');
             });
 
             it('Should set owner data in the answers', async () => {
-                await questionnaireService.createQuestionnaire(templatename, ownerData);
+                await questionnaireService.createQuestionnaire({templateName, ownerData});
 
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledTimes(1);
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledWith(
@@ -321,7 +321,11 @@ describe('Questionnaire Service', () => {
             });
 
             it('Should set origin data in the answers if it is included', async () => {
-                await questionnaireService.createQuestionnaire(templatename, ownerData, originData);
+                await questionnaireService.createQuestionnaire({
+                    templateName,
+                    ownerData,
+                    originData
+                });
 
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledTimes(1);
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledWith(
@@ -341,12 +345,12 @@ describe('Questionnaire Service', () => {
             });
 
             it('Should set external data in the answers if it is included', async () => {
-                await questionnaireService.createQuestionnaire(
-                    templatename,
+                await questionnaireService.createQuestionnaire({
+                    templateName,
                     ownerData,
                     originData,
                     externalData
-                );
+                });
 
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledTimes(1);
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledWith(
@@ -373,7 +377,7 @@ describe('Questionnaire Service', () => {
                     id: ownerId,
                     isAuthenticated: true
                 };
-                await questionnaireService.createQuestionnaire(templatename, ownerData);
+                await questionnaireService.createQuestionnaire({templateName, ownerData});
 
                 expect(mockDalService.updateExpiryForAuthenticatedOwner).toHaveBeenCalledTimes(1);
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledTimes(1);
@@ -398,7 +402,7 @@ describe('Questionnaire Service', () => {
                 const ownerData = undefined;
 
                 await expect(
-                    questionnaireService.createQuestionnaire(templatename, ownerData)
+                    questionnaireService.createQuestionnaire({templateName, ownerData})
                 ).rejects.toThrow('Owner data must be defined');
             });
 
@@ -411,7 +415,7 @@ describe('Questionnaire Service', () => {
                         return {run: runMock};
                     }
                 });
-                await questionnaireService.createQuestionnaire(templatename, ownerData);
+                await questionnaireService.createQuestionnaire({templateName, ownerData});
                 expect(runMock).toHaveBeenCalledWith(onCreateTasks);
             });
 
@@ -430,7 +434,7 @@ describe('Questionnaire Service', () => {
                 });
 
                 await expect(
-                    questionnaireService.createQuestionnaire(templatename, ownerData)
+                    questionnaireService.createQuestionnaire({templateName, ownerData})
                 ).resolves.not.toThrow();
                 expect(runMock).toHaveBeenCalledWith(onCreateTasks);
                 expect(loggerMock.info).toHaveBeenCalledWith(failError);
@@ -781,8 +785,6 @@ describe('Questionnaire Service', () => {
         describe('getTemplateMetadata', () => {
             it('Should return an array of template metadata resources', async () => {
                 const actual = await questionnaireService.getTemplateMetadata();
-                console.log(actual);
-
                 expect(actual.data).toEqual([
                     {
                         id: validQuestionnaireId,

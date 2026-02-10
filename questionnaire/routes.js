@@ -42,14 +42,14 @@ router.route('/').post(permissions('create:questionnaires'), async (req, res, ne
             apiVersion: req.get('Dcs-Api-Version'),
             ownerId: owner?.id
         });
-        const response = await questionnaireService.createQuestionnaire(
+        const response = await questionnaireService.createQuestionnaire({
             templateName,
-            owner,
-            origin,
-            external,
+            ownerData: owner,
+            originData: origin,
+            externalData: external,
             templateVersion,
             userData
-        );
+        });
 
         res.status(201).json(response);
     } catch (err) {
@@ -198,7 +198,6 @@ router
             );
             res.status(200).json(response);
         } catch (err) {
-            console.log(err);
             next(err);
         }
     });
@@ -215,7 +214,6 @@ router
             const response = await questionnaireService.getTemplateMetadata();
             res.status(200).json(response);
         } catch (err) {
-            console.log(err);
             next(err);
         }
     });

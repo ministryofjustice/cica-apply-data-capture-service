@@ -1,0 +1,146 @@
+{
+    "type": "request-a-review",
+    "id": "56d30a9f-c191-4bb4-b65d-dedda5397904",
+    "version": "1.0.0",
+    "sections": {
+        "p--a": {},
+        "p-b": {},
+        "p-c": {},
+        "p--d": {},
+        "system": {},
+        "owner": {},
+        "origin": {}
+    },
+    "routes": {
+        "initial": "p--a",
+        "referrer": "https://www.gov.uk/claim-compensation-criminal-injury/make-claim",
+        "summary": ["p-c"],
+        "confirmation": "p--d",
+        "states": {
+            "p--a": {
+                "on": {
+                    "ANSWER": "p-b"
+                }
+            },
+            "p-b": {
+                "on": {
+                    "ANSWER": "p--c"
+                }
+            },
+            "p-c": {
+                "on": {
+                    "ANSWER": "p--d"
+                }
+            },
+            "p--d": {
+                "type": "final"
+            },
+            "system": {"type": "final"},
+            "owner": {"type": "final"},
+            "origin": {"type": "final"}
+        }
+    },
+    "answers": {
+        "p--a": {},
+        "p-b": {"q-b": "foo"},
+        "p-c": {"q-c": "bar"},
+        "p--d": {},
+        "system": {"case-reference": "77/777777"},
+        "owner": {"owner-id": "urn:uuid:11111111-7dec-11d0-a765-00a0c91e6bf6"},
+        "origin": {}
+    },
+    "onSubmit": {
+        "id": "task0",
+        "type": "sequential",
+        "retries": 0,
+        "data": [
+            {
+                "id": "task1",
+                "type": "transformAndUpload",
+                "retries": 0,
+                "data": {
+                    "questionnaireDef": "$.questionnaireDef",
+                    "logger": "$.logger"
+                }
+            },
+            {
+                "id": "task2",
+                "type": "createStubs",
+                "retries": 0,
+                "data": {
+                    "questionnaire": "$.questionnaireDef",
+                    "logger": "$.logger"
+                }
+            }
+        ]
+    },
+    "onCreate": {
+        "id": "task0",
+        "type": "sequential",
+        "retries": 0,
+        "data": [
+            {
+                "id": "task1",
+                "type": "sendNotifyMessageToSQS",
+                "retries": 0,
+                "data": {
+                    "questionnaire": "$.questionnaireDef",
+                    "logger": "$.logger",
+                    "type": "$.type"
+                }
+            }
+        ]
+    },
+    "progress": ["p--a", "p--b", "p--c", "p--d"],
+    "taxonomies": {},
+    "meta": {
+        "questionnaireDocumentVersion": "5.0.0",
+        "onCreate": {
+            "actions": [
+                {
+                    "description": "Decision notification email",
+                    "type": "sendEmail",
+                    "cond": ["==", "$.meta.personalisation.contact-method", "email"],
+                    "data": {
+                        "templateId": "",
+                        "emailAddress": "||/meta/personalisation/email-address||",
+                        "personalisation": {
+                            "caseReference": "||/answers/system/case-reference||",
+                            "content": "https://claim-criminal-injuries-compensation.service.justice.gov.uk/apply/account/secure-link-login?uid=||/answers/owner/owner-id||&qid="
+                        },
+                        "reference": null
+                    }
+                },
+                {
+                    "description": "Decision notification sms",
+                    "type": "sendSms",
+                    "cond": ["==", "$.meta.personalisation.contact-method", "sms"],
+                    "data": {
+                        "templateId": "",
+                        "emailAddress": "||/meta/personalisation/telephone-number||",
+                        "personalisation": {
+                            "caseReference": "||/answers/system/case-reference||",
+                            "content": "https://claim-criminal-injuries-compensation.service.justice.gov.uk/apply/account/secure-link-login?uid=||/answers/owner/owner-id||&qid="
+                        },
+                        "reference": null
+                    }
+                }
+            ]
+        },
+        "onComplete": {
+            "actions": []
+        },
+        "summaryBlocks": {
+            "read": {
+                "condition": "unopened",
+                "link": "<a href='/apply/resume/||questionnaireId||' class='govuk-link'>Read our decision about your application</a>"
+            },
+            "re-read": {
+                "condition": "viewed",
+                "link": "<a href='/apply/resume/||questionnaireId||' class='govuk-link'>Read our decision about your application</a>"
+            }
+        },
+        "personalisation": {"name": "test testcase", "address": "test address"}
+    },
+    "attributes": {}
+}

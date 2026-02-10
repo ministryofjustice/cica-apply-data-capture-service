@@ -11,6 +11,7 @@ const {
 } = require('../questionnaire/utils/taskRunner/tasks/generateCaseReference');
 const {sendSubmissionMessageToSQS} = require('../questionnaire/utils/taskRunner/tasks/postToSQS');
 const sendNotifyMessageToSQS = require('../questionnaire/utils/taskRunner/tasks/postToNotify');
+const {createStubs} = require('../questionnaire/utils/taskRunner/tasks/createStubs');
 const getProgress = require('../utils/getProgressArray');
 const {createAppError} = require('../../middleware/error-handler/createAppError');
 
@@ -25,7 +26,8 @@ function createSubmissionService({
         transformAndUpload,
         generateReferenceNumber,
         sendSubmissionMessageToSQS,
-        sendNotifyMessageToSQS
+        sendNotifyMessageToSQS,
+        createStubs
     }
 } = {}) {
     const questionnaireService = createQuestionnaireService({

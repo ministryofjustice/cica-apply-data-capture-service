@@ -17,7 +17,7 @@ beforeEach(() => {
 describe('Openapi version 2023-05-17 validation', () => {
     jest.doMock('./questionnaire-service.js', () => {
         const questionnaireServiceMock = {
-            createQuestionnaire: jest.fn(templateName => {
+            createQuestionnaire: jest.fn(({templateName}) => {
                 if (templateName === 'this-does-not-exist') {
                     throw new VError(
                         {
