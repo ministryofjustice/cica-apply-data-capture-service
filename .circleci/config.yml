@@ -16,6 +16,7 @@ jobs:
   build-for-test:
     docker:
       - image: node:24.13.0-bookworm-slim
+    resource_class: large
     steps:
       - checkout
       - run:
