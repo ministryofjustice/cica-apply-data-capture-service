@@ -385,6 +385,29 @@ function questionnaireDAL(spec) {
         return result;
     }
 
+    async function updateQuestionnaireExpiresDate(questionnaireId) {
+        let result;
+
+        try {
+            result = await db.query(
+                'UPDATE questionnaire SET expires = current_timestamp WHERE id = $1',
+                [questionnaireId]
+            );
+            if (result.rowCount === 0) {
+                throw new VError(
+                    {
+                        name: 'UpdateNotSuccessful'
+                    },
+                    `Questionnaire "${questionnaireId}" expiry date was not updated successfully`
+                );
+            }
+        } catch (err) {
+            throw err;
+        }
+
+        return result;
+    }
+
     return Object.freeze({
         createQuestionnaire,
         updateQuestionnaire,
@@ -403,7 +426,8 @@ function questionnaireDAL(spec) {
         updateQuestionnaireModifiedDateByOwner,
         getQuestionnaireSubmissionStatusByOwner,
         updateQuestionnaireSubmissionStatusByOwner,
-        getTemplateMetadataByOwner
+        getTemplateMetadataByOwner,
+        updateQuestionnaireExpiresDate
     });
 }
 

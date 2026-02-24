@@ -226,6 +226,13 @@ jest.doMock('./questionnaire-dal', () => {
         }),
         getTemplateMetadataByOwner: jest.fn(() => {
             return [{id: validQuestionnaireId, meta: letterMetadata}];
+        }),
+        updateQuestionnaireExpiresDate: jest.fn(questionnaireId => {
+            if (questionnaireId === invalidQuestionnaireId) {
+                throw new Error('Questionnaire expiry date was not updated successfully');
+            }
+
+            return 'ok';
         })
     };
 
@@ -817,6 +824,65 @@ describe('Questionnaire Service', () => {
                 expect(mockDalService.getQuestionnaireIdsBySubmissionStatus).toHaveBeenCalledWith(
                     failedSubmissionStatus
                 );
+            });
+            describe('updateQuestionnairesExpiresDate', () => {
+                it('should execute the updateQuestionnairesExpiresDate db call for each questionnaireId', async () => {
+                    const questionnaireService = createQuestionnaireService({
+                        logger: () => 'Logged from createQuestionnaire test',
+                        apiVersion: undefined // Undefined should only occur for DCS Admin API
+                    });
+                    await questionnaireService.updateQuestionnairesExpiresDate([
+                        validQuestionnaireId,
+                        validQuestionnaireId
+                    ]);
+
+                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
+                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
+                        validQuestionnaireId
+                    );
+                });
+
+                it('should return even if a questionnaireId fails to update', async () => {
+                    const questionnaireService = createQuestionnaireService({
+                        logger: () => 'Logged from createQuestionnaire test',
+                        apiVersion: undefined // Undefined should only occur for DCS Admin API
+                    });
+                    const response = await questionnaireService.updateQuestionnairesExpiresDate([
+                        validQuestionnaireId,
+                        invalidQuestionnaireId
+                    ]);
+                    const successfulResponse = {};
+                    successfulResponse[validQuestionnaireId] = 'success';
+                    const unsuccessfulResponse = {};
+                    unsuccessfulResponse[invalidQuestionnaireId] = 'failure';
+                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
+                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
+                        validQuestionnaireId
+                    );
+                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
+                        invalidQuestionnaireId
+                    );
+                    expect(response[0]).toEqual(successfulResponse);
+                    expect(response[1]).toEqual(unsuccessfulResponse);
+                });
+
+                it('should throw an error if all questionnaireIds fail to update', async () => {
+                    const questionnaireService = createQuestionnaireService({
+                        logger: () => 'Logged from createQuestionnaire test',
+                        apiVersion: undefined // Undefined should only occur for DCS Admin API
+                    });
+                    await expect(
+                        questionnaireService.updateQuestionnairesExpiresDate([
+                            invalidQuestionnaireId,
+                            invalidQuestionnaireId
+                        ])
+                    ).rejects.toThrow('Failed to update expires date for all Ids');
+
+                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
+                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
+                        invalidQuestionnaireId
+                    );
+                });
             });
         });
     });
