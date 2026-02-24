@@ -23,7 +23,10 @@
             "bearerAuth": []
         }
     ],
-    "tags": [{"name": "Submissions", "description": "Submitting any questionnare"}],
+    "tags": [
+        {"name": "Submissions", "description": "Submitting any questionnaire"},
+        {"name": "Deletions", "description": "Deleting any questionnaire"}
+    ],
     "paths": {
         "/questionnaires/resubmit-failed": {
             "post": {
@@ -43,6 +46,37 @@
                                     {
                                         "id": "2f9769b2-3fb3-481c-9a19-bb9bb71e3a86",
                                         "resubmitted": true
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    }
+                }
+            }
+        },
+        "/questionnaires/delete": {
+            "post": {
+                "tags": ["Deletions"],
+                "summary": "Delete any questionnaires matching specified IDs",
+                "description": "Sets the expiry date of matching questionnaires to now so they can be deleted",
+                "operationId": "DeleteQuestionnaire",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/vnd.api+json": {
+                                "schema": {
+                                    "$ref": "./json-schemas/api/admin_questionnaires_delete/post/res/200.json"
+                                },
+                                "example": [
+                                    {
+                                        "2f9769b2-3fb3-481c-9a19-bb9bb71e3a86": "success"
                                     }
                                 ]
                             }
