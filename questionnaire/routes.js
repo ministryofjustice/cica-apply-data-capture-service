@@ -218,4 +218,20 @@ router
         }
     });
 
+router.route('/delete').post(permissions('admin'), async (req, res, next) => {
+    try {
+        const {questionnaireIds} = req.params;
+        const questionnaireService = createQuestionnaireService({
+            logger: req.log,
+            apiVersion: req.get('Dcs-Api-Version')
+        });
+        const response = await questionnaireService.updateQuestionnairesExpiresDate(
+            questionnaireIds
+        );
+        res.status(200).json(response);
+    } catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;

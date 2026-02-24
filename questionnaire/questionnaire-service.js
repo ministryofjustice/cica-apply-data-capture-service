@@ -690,6 +690,37 @@ function createQuestionnaireService({
         };
     }
 
+    async function updateQuestionnaireExpiresDate(questionnaireId) {
+        return db.updateQuestionnaireExpiresDate(questionnaireId);
+    }
+
+    async function updateQuestionnairesExpiresDate(questionnaireIds) {
+        let failCount = 0;
+        const results = await Promise.all(
+            questionnaireIds.map(async questionnaireId => {
+                const result = {};
+                try {
+                    await updateQuestionnaireExpiresDate(questionnaireId);
+                    result[questionnaireId] = 'success';
+                    return result;
+                } catch (err) {
+                    result[questionnaireId] = 'failure';
+                    failCount += 1;
+                    return result;
+                }
+            })
+        );
+        if (failCount === questionnaireIds.length) {
+            throw new VError(
+                {
+                    name: 'UpdateNotSuccessful'
+                },
+                `Failed to update expires date for all Ids`
+            );
+        }
+        return results;
+    }
+
     return Object.freeze({
         createQuestionnaire,
         createAnswers,
@@ -705,7 +736,8 @@ function createQuestionnaireService({
         updateExpiryForAuthenticatedOwner,
         getQuestionnaireIdsBySubmissionStatus,
         getTemplateMetadata,
-        getTemplateMetadataById
+        getTemplateMetadataById,
+        updateQuestionnairesExpiresDate
     });
 }
 

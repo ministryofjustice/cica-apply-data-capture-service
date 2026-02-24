@@ -513,4 +513,35 @@ describe('questionnaire data access layer', () => {
             ).rejects.toThrow('DB_QUERY_ERROR');
         });
     });
+
+    describe('updateQuestionnaireExpiresDate', () => {
+        const query = 'UPDATE questionnaire SET expires = current_timestamp WHERE id = $1';
+        it('Should run an update expiry query and filter by questionnaireId', async () => {
+            const questionnaireId = DB_QUERY_SUCCESS_QUESTIONNAIRE_ID;
+            const questionnaireDAL = createQuestionnaireDAL({logger: jest.fn()});
+            await questionnaireDAL.updateQuestionnaireExpiresDate(questionnaireId);
+
+            expect(mockedDbService.query).toHaveBeenCalledTimes(1);
+            expect(mockedDbService.query).toHaveBeenCalledWith(query, [questionnaireId]);
+        });
+
+        it('Should error gracefully if no rows are updated', async () => {
+            const questionnaireId = DB_QUERY_ROW_COUNT_ZERO_QUESTIONNAIRE_ID;
+            const questionnaireDAL = createQuestionnaireDAL({logger: jest.fn()});
+            await expect(
+                questionnaireDAL.updateQuestionnaireExpiresDate(questionnaireId)
+            ).rejects.toThrow(
+                'Questionnaire "c9723b81-c50d-4050-805f-108995067913" expiry date was not updated successfully'
+            );
+        });
+
+        it('Should handle errors gracefully', async () => {
+            const questionnaireId = DB_QUERY_ERROR_QUESTIONNAIRE_ID;
+            const questionnaireDAL = createQuestionnaireDAL({logger: jest.fn()});
+
+            await expect(
+                questionnaireDAL.updateQuestionnaireExpiresDate(questionnaireId)
+            ).rejects.toThrow('DB_QUERY_ERROR');
+        });
+    });
 });
