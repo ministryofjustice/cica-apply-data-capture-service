@@ -3,6 +3,6 @@
     "type": "array",
     "additionalProperties": false,
     "items": {
-        "type": "object"
+        "type": "array"
     }
 }

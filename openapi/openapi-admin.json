@@ -67,12 +67,12 @@
                 "description": "Sets the expiry date of matching questionnaires to now so they can be deleted",
                 "operationId": "DeleteQuestionnaire",
                 "responses": {
-                    "200": {
+                    "204": {
                         "description": "Success",
                         "content": {
                             "application/vnd.api+json": {
                                 "schema": {
-                                    "$ref": "./json-schemas/api/admin_questionnaires_delete/post/res/200.json"
+                                    "$ref": "./json-schemas/api/admin_questionnaires_delete/post/res/204.json"
                                 },
                                 "example": [
                                     {

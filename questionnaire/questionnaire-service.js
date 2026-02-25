@@ -695,29 +695,32 @@ function createQuestionnaireService({
     }
 
     async function updateQuestionnairesExpiresDate(questionnaireIds) {
-        let failCount = 0;
+        let notFoundCount = 0;
         const results = await Promise.all(
             questionnaireIds.map(async questionnaireId => {
-                const result = {};
                 try {
+                    // Check the questionnaire exists first
+                    await getQuestionnaire(questionnaireId);
+                    // If it exists, try and delete it
                     await updateQuestionnaireExpiresDate(questionnaireId);
-                    result[questionnaireId] = 'success';
-                    return result;
+                    return 'success';
                 } catch (err) {
-                    result[questionnaireId] = 'failure';
-                    failCount += 1;
-                    return result;
+                    if (err.name === 'ResourceNotFound') {
+                        // If the questionnaire doesn't exist log it but don't fail it
+                        logger.info(err.message);
+                        notFoundCount += 1;
+                        return 'notFound';
+                    }
+                    // If any other errors occur they are legitimate DB errors
+                    throw err;
                 }
             })
         );
-        if (failCount === questionnaireIds.length) {
-            throw new VError(
-                {
-                    name: 'UpdateNotSuccessful'
-                },
-                `Failed to update expires date for all Ids`
-            );
-        }
+        logger.info(
+            `Successfully deleted ${questionnaireIds.length - notFoundCount} out of ${
+                questionnaireIds.length
+            } questionnaires`
+        );
         return results;
     }
 

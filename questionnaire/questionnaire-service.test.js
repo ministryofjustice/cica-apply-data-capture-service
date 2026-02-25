@@ -4,6 +4,7 @@
 'use strict';
 
 const mockAjv = require('ajv');
+const VError = require('verror');
 const questionnaireFixture = require('./test-fixtures/res/questionnaireCompleteWithCRN');
 const incompatibleQuestionnaireFixture = require('./test-fixtures/res/questionnaireIncompatible');
 
@@ -178,7 +179,12 @@ jest.doMock('./questionnaire-dal', () => {
         }),
         getQuestionnaire: jest.fn(questionnaireId => {
             if (questionnaireId === invalidQuestionnaireId) {
-                throw new Error('Cannot find questionnaire');
+                throw new VError(
+                    {
+                        name: 'ResourceNotFound'
+                    },
+                    `Questionnaire "${questionnaireId}" not found`
+                );
             }
             if (questionnaireId === incompatibleQuestionnaireId) {
                 return incompatibleQuestionnaireFixture;
@@ -190,7 +196,12 @@ jest.doMock('./questionnaire-dal', () => {
         }),
         getQuestionnaireByOwner: jest.fn(questionnaireId => {
             if (questionnaireId === invalidQuestionnaireId) {
-                throw new Error('Cannot find questionnaire');
+                throw new VError(
+                    {
+                        name: 'ResourceNotFound'
+                    },
+                    `Questionnaire "${questionnaireId}" not found`
+                );
             }
             if (questionnaireId === incompatibleQuestionnaireId) {
                 return incompatibleQuestionnaireFixture;
@@ -228,7 +239,7 @@ jest.doMock('./questionnaire-dal', () => {
             return [{id: validQuestionnaireId, meta: letterMetadata}];
         }),
         updateQuestionnaireExpiresDate: jest.fn(questionnaireId => {
-            if (questionnaireId === invalidQuestionnaireId) {
+            if (questionnaireId === incompatibleQuestionnaireId) {
                 throw new Error('Questionnaire expiry date was not updated successfully');
             }
 
@@ -686,7 +697,7 @@ describe('Questionnaire Service', () => {
                         validSectionId,
                         answers
                     )
-                ).rejects.toThrow('Cannot find questionnaire');
+                ).rejects.toThrow('Questionnaire "11111111-7dec-11d0-a765-00a0c91e6bf6" not found');
             });
         });
 
@@ -825,64 +836,83 @@ describe('Questionnaire Service', () => {
                     failedSubmissionStatus
                 );
             });
-            describe('updateQuestionnairesExpiresDate', () => {
-                it('should execute the updateQuestionnairesExpiresDate db call for each questionnaireId', async () => {
-                    const questionnaireService = createQuestionnaireService({
-                        logger: () => 'Logged from createQuestionnaire test',
-                        apiVersion: undefined // Undefined should only occur for DCS Admin API
-                    });
-                    await questionnaireService.updateQuestionnairesExpiresDate([
+        });
+        describe('updateQuestionnairesExpiresDate', () => {
+            const logger = {
+                info: jest.fn(() => {
+                    return 'Logged from createQuestionnaire test';
+                })
+            };
+            it('should execute the updateQuestionnairesExpiresDate db call for each questionnaireId', async () => {
+                const questionnaireService = createQuestionnaireService({
+                    logger,
+                    apiVersion: undefined // Undefined should only occur for DCS Admin API
+                });
+                await questionnaireService.updateQuestionnairesExpiresDate([
+                    validQuestionnaireId,
+                    validQuestionnaireId
+                ]);
+
+                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
+                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
+                    validQuestionnaireId
+                );
+                expect(logger.info).toHaveBeenCalledTimes(1);
+                expect(logger.info).toHaveBeenCalledWith(
+                    'Successfully deleted 2 out of 2 questionnaires'
+                );
+            });
+
+            it('should return successfully even if a questionnaireId cannot be found in the DB', async () => {
+                const questionnaireService = createQuestionnaireService({
+                    logger,
+                    apiVersion: undefined // Undefined should only occur for DCS Admin API
+                });
+                const response = await questionnaireService.updateQuestionnairesExpiresDate([
+                    validQuestionnaireId,
+                    invalidQuestionnaireId
+                ]);
+                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(1);
+                expect(mockDalService.getQuestionnaireByOwner).toHaveBeenCalledTimes(2);
+                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
+                    validQuestionnaireId
+                );
+                expect(mockDalService.getQuestionnaireByOwner).toHaveBeenCalledWith(
+                    validQuestionnaireId
+                );
+                expect(mockDalService.getQuestionnaireByOwner).toHaveBeenCalledWith(
+                    invalidQuestionnaireId
+                );
+                expect(response[0]).toEqual('success');
+                expect(response[1]).toEqual('notFound');
+                expect(logger.info).toHaveBeenCalledTimes(2);
+                expect(logger.info).toHaveBeenCalledWith(
+                    'Successfully deleted 1 out of 2 questionnaires'
+                );
+                expect(logger.info).toHaveBeenCalledWith(
+                    'Questionnaire "11111111-7dec-11d0-a765-00a0c91e6bf6" not found'
+                );
+            });
+
+            it('should throw an error if a database error occurs', async () => {
+                const questionnaireService = createQuestionnaireService({
+                    logger,
+                    apiVersion: undefined // Undefined should only occur for DCS Admin API
+                });
+                await expect(
+                    questionnaireService.updateQuestionnairesExpiresDate([
                         validQuestionnaireId,
-                        validQuestionnaireId
-                    ]);
+                        incompatibleQuestionnaireId
+                    ])
+                ).rejects.toThrow('Questionnaire expiry date was not updated successfully');
 
-                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
-                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
-                        validQuestionnaireId
-                    );
-                });
-
-                it('should return even if a questionnaireId fails to update', async () => {
-                    const questionnaireService = createQuestionnaireService({
-                        logger: () => 'Logged from createQuestionnaire test',
-                        apiVersion: undefined // Undefined should only occur for DCS Admin API
-                    });
-                    const response = await questionnaireService.updateQuestionnairesExpiresDate([
-                        validQuestionnaireId,
-                        invalidQuestionnaireId
-                    ]);
-                    const successfulResponse = {};
-                    successfulResponse[validQuestionnaireId] = 'success';
-                    const unsuccessfulResponse = {};
-                    unsuccessfulResponse[invalidQuestionnaireId] = 'failure';
-                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
-                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
-                        validQuestionnaireId
-                    );
-                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
-                        invalidQuestionnaireId
-                    );
-                    expect(response[0]).toEqual(successfulResponse);
-                    expect(response[1]).toEqual(unsuccessfulResponse);
-                });
-
-                it('should throw an error if all questionnaireIds fail to update', async () => {
-                    const questionnaireService = createQuestionnaireService({
-                        logger: () => 'Logged from createQuestionnaire test',
-                        apiVersion: undefined // Undefined should only occur for DCS Admin API
-                    });
-                    await expect(
-                        questionnaireService.updateQuestionnairesExpiresDate([
-                            invalidQuestionnaireId,
-                            invalidQuestionnaireId
-                        ])
-                    ).rejects.toThrow('Failed to update expires date for all Ids');
-
-                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
-                    expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
-                        invalidQuestionnaireId
-                    );
-                });
+                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
+                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
+                    incompatibleQuestionnaireId
+                );
+                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
+                    validQuestionnaireId
+                );
             });
         });
     });
