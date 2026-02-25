@@ -228,7 +228,7 @@ router.route('/delete').post(permissions('admin'), async (req, res, next) => {
         const response = await questionnaireService.updateQuestionnairesExpiresDate(
             questionnaireIds
         );
-        res.status(200).json(response);
+        res.status(204).json(response);
     } catch (err) {
         next(err);
     }
