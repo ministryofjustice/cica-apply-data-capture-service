@@ -668,7 +668,10 @@
                             {"const": 10000114, "title": "Essex Police"},
                             {"const": 10000128, "title": "Gloucestershire Constabulary"},
                             {"const": 10000140, "title": "Greater Manchester Police"},
-                            {"const": 10000150, "title": "Hampshire Constabulary"},
+                            {
+                                "const": 10000150,
+                                "title": "Hampshire and Isle of Wight Constabulary"
+                            },
                             {"const": 10000153, "title": "Hertfordshire Constabulary"},
                             {"const": 10000169, "title": "Humberside Police"},
                             {"const": 10000172, "title": "Kent Police"},
