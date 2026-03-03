@@ -1,6 +1,6 @@
 {
     "name": "data-capture-service",
-    "version": "9.8.6",
+    "version": "9.8.7",
     "engines": {
         "npm": ">=10.8.2",
         "node": ">=24.13.0"
