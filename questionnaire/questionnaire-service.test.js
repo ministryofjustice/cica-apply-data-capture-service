@@ -301,10 +301,10 @@ describe('Questionnaire Service', () => {
         });
         describe('createQuestionnaire', () => {
             it('Should create a questionnaire', async () => {
-                const actual = await questionnaireService.createQuestionnaire({
+                const actual = await questionnaireService.createQuestionnaire(
                     templateName,
                     ownerData
-                });
+                );
 
                 expect(actual.data).toMatchObject({
                     id: expect.any(String),
@@ -317,12 +317,12 @@ describe('Questionnaire Service', () => {
                 const templateName = 'not-a-template';
 
                 await expect(
-                    questionnaireService.createQuestionnaire({templateName, ownerData})
+                    questionnaireService.createQuestionnaire(templateName, ownerData)
                 ).rejects.toThrow('Template "not-a-template" does not exist');
             });
 
             it('Should set owner data in the answers', async () => {
-                await questionnaireService.createQuestionnaire({templateName, ownerData});
+                await questionnaireService.createQuestionnaire(templateName, ownerData);
 
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledTimes(1);
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledWith(
@@ -339,11 +339,7 @@ describe('Questionnaire Service', () => {
             });
 
             it('Should set origin data in the answers if it is included', async () => {
-                await questionnaireService.createQuestionnaire({
-                    templateName,
-                    ownerData,
-                    originData
-                });
+                await questionnaireService.createQuestionnaire(templateName, ownerData, originData);
 
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledTimes(1);
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledWith(
@@ -363,12 +359,12 @@ describe('Questionnaire Service', () => {
             });
 
             it('Should set external data in the answers if it is included', async () => {
-                await questionnaireService.createQuestionnaire({
+                await questionnaireService.createQuestionnaire(
                     templateName,
                     ownerData,
                     originData,
                     externalData
-                });
+                );
 
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledTimes(1);
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledWith(
@@ -395,7 +391,7 @@ describe('Questionnaire Service', () => {
                     id: ownerId,
                     isAuthenticated: true
                 };
-                await questionnaireService.createQuestionnaire({templateName, ownerData});
+                await questionnaireService.createQuestionnaire(templateName, ownerData);
 
                 expect(mockDalService.updateExpiryForAuthenticatedOwner).toHaveBeenCalledTimes(1);
                 expect(mockDalService.createQuestionnaire).toHaveBeenCalledTimes(1);
@@ -420,42 +416,8 @@ describe('Questionnaire Service', () => {
                 const ownerData = undefined;
 
                 await expect(
-                    questionnaireService.createQuestionnaire({templateName, ownerData})
+                    questionnaireService.createQuestionnaire(templateName, ownerData)
                 ).rejects.toThrow('Owner data must be defined');
-            });
-
-            it('Should run any onCreate tasks defined in the questionnaire', async () => {
-                const runMock = jest.fn(() => 'ok!');
-                const questionnaireService = createQuestionnaireService({
-                    logger: () => 'Logged from createQuestionnaire test',
-                    apiVersion,
-                    createTaskRunner: () => {
-                        return {run: runMock};
-                    }
-                });
-                await questionnaireService.createQuestionnaire({templateName, ownerData});
-                expect(runMock).toHaveBeenCalledWith(onCreateTasks);
-            });
-
-            it('Should log an error but still return if any onCreate tasks fail', async () => {
-                const failError = new Error('Task failed to run');
-                const runMock = jest.fn(() => {
-                    throw failError;
-                });
-                const loggerMock = {info: jest.fn()};
-                const questionnaireService = createQuestionnaireService({
-                    logger: loggerMock,
-                    apiVersion,
-                    createTaskRunner: () => {
-                        return {run: runMock};
-                    }
-                });
-
-                await expect(
-                    questionnaireService.createQuestionnaire({templateName, ownerData})
-                ).resolves.not.toThrow();
-                expect(runMock).toHaveBeenCalledWith(onCreateTasks);
-                expect(loggerMock.info).toHaveBeenCalledWith(failError);
             });
         });
 
@@ -834,84 +796,6 @@ describe('Questionnaire Service', () => {
                 );
                 expect(mockDalService.getQuestionnaireIdsBySubmissionStatus).toHaveBeenCalledWith(
                     failedSubmissionStatus
-                );
-            });
-        });
-        describe('updateQuestionnairesExpiresDate', () => {
-            const logger = {
-                info: jest.fn(() => {
-                    return 'Logged from createQuestionnaire test';
-                })
-            };
-            it('should execute the updateQuestionnairesExpiresDate db call for each questionnaireId', async () => {
-                const questionnaireService = createQuestionnaireService({
-                    logger,
-                    apiVersion: undefined // Undefined should only occur for DCS Admin API
-                });
-                await questionnaireService.updateQuestionnairesExpiresDate([
-                    validQuestionnaireId,
-                    validQuestionnaireId
-                ]);
-
-                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
-                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
-                    validQuestionnaireId
-                );
-                expect(logger.info).toHaveBeenCalledTimes(1);
-                expect(logger.info).toHaveBeenCalledWith(
-                    'Successfully deleted 2 out of 2 questionnaires'
-                );
-            });
-
-            it('should return successfully even if a questionnaireId cannot be found in the DB', async () => {
-                const questionnaireService = createQuestionnaireService({
-                    logger,
-                    apiVersion: undefined // Undefined should only occur for DCS Admin API
-                });
-                const response = await questionnaireService.updateQuestionnairesExpiresDate([
-                    validQuestionnaireId,
-                    invalidQuestionnaireId
-                ]);
-                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(1);
-                expect(mockDalService.getQuestionnaireByOwner).toHaveBeenCalledTimes(2);
-                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
-                    validQuestionnaireId
-                );
-                expect(mockDalService.getQuestionnaireByOwner).toHaveBeenCalledWith(
-                    validQuestionnaireId
-                );
-                expect(mockDalService.getQuestionnaireByOwner).toHaveBeenCalledWith(
-                    invalidQuestionnaireId
-                );
-                expect(response[0]).toEqual('success');
-                expect(response[1]).toEqual('notFound');
-                expect(logger.info).toHaveBeenCalledTimes(2);
-                expect(logger.info).toHaveBeenCalledWith(
-                    'Successfully deleted 1 out of 2 questionnaires'
-                );
-                expect(logger.info).toHaveBeenCalledWith(
-                    'Questionnaire "11111111-7dec-11d0-a765-00a0c91e6bf6" not found'
-                );
-            });
-
-            it('should throw an error if a database error occurs', async () => {
-                const questionnaireService = createQuestionnaireService({
-                    logger,
-                    apiVersion: undefined // Undefined should only occur for DCS Admin API
-                });
-                await expect(
-                    questionnaireService.updateQuestionnairesExpiresDate([
-                        validQuestionnaireId,
-                        incompatibleQuestionnaireId
-                    ])
-                ).rejects.toThrow('Questionnaire expiry date was not updated successfully');
-
-                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledTimes(2);
-                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
-                    incompatibleQuestionnaireId
-                );
-                expect(mockDalService.updateQuestionnaireExpiresDate).toHaveBeenCalledWith(
-                    validQuestionnaireId
                 );
             });
         });

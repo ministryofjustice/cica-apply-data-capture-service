@@ -3,7 +3,7 @@
 const crypto = require('node:crypto');
 
 const createQuestionnaireHelper = require('../../../../questionnaire');
-const createQuestionnaireService = require('../../../../../questionnaire-service');
+const createLetterService = require('../../../../../letters/letters-service');
 
 /**
  * Creates stub templates specified in the questionnaire metadata
@@ -18,7 +18,7 @@ async function createStubs({questionnaire, logger, type}) {
     const fullQuestionnaireHelper = createQuestionnaireHelper({
         questionnaireDefinition: questionnaire
     });
-    const questionnaireService = createQuestionnaireService({
+    const letterService = createLetterService({
         logger,
         ownerId: fullQuestionnaireHelper.getAnswers().owner['owner-id']
     });
@@ -68,13 +68,15 @@ async function createStubs({questionnaire, logger, type}) {
 
                     // Create the new questionnaire
                     stub.type = 'stub';
-                    await questionnaireService.createQuestionnaire({
-                        ownerData: {
-                            id: stub.answers.owner['owner-id'],
-                            isAuthenticated: stub.answers.owner['is-authenticated']
-                        },
-                        preMadeQuestionnaire: stub
+
+                    // Owner, origin and system are already part of the stub.
+                    await letterService.createQuestionnaire({
+                        template: stub,
+                        owner: undefined,
+                        origin: undefined,
+                        system: undefined
                     });
+
                     logger.info(
                         `Stub with id ${stub.id} created for questionnaire with id ${fullQuestionnaireId}`
                     );
