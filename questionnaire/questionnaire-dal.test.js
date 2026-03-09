@@ -515,7 +515,8 @@ describe('questionnaire data access layer', () => {
     });
 
     describe('updateQuestionnaireExpiresDate', () => {
-        const query = 'UPDATE questionnaire SET expires = current_timestamp WHERE id = $1';
+        const query =
+            'UPDATE questionnaire SET expires = COALESCE($2::timestamptz, CURRENT_TIMESTAMP) WHERE id = $1';
         it('Should run an update expiry query and filter by questionnaireId', async () => {
             const questionnaireId = DB_QUERY_SUCCESS_QUESTIONNAIRE_ID;
             const questionnaireDAL = createQuestionnaireDAL({logger: jest.fn()});
