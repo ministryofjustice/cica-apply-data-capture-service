@@ -84,14 +84,7 @@
                                         "external": {
                                             "id": "urn:uuid:f81d4fae-7dec-11d0-a765-123456781234"
                                         },
-                                        "templateVersion": "1.0.0",
-                                        "userData": {
-                                            "personalisation": {
-                                                "first-name": "Test",
-                                                "surname": "Test case"
-                                            },
-                                            "caseReference": "123456"
-                                        }
+                                        "templateVersion": "1.0.0"
                                     }
                                 }
                             }
@@ -689,7 +682,7 @@
                         "content": {
                             "application/vnd.api+json": {
                                 "schema": {
-                                    "$ref": "json-schemas/api/_questionnaires_metadata/get/res/200.json"
+                                    "$ref": "json-schemas/api/_questionnaires_template-metadata/get/res/200.json"
                                 },
                                 "example": {
                                     "data": [
@@ -752,7 +745,7 @@
                         "content": {
                             "application/vnd.api+json": {
                                 "schema": {
-                                    "$ref": "json-schemas/api/_questionnaires_{questionnaireId}_metadata/get/res/200.json"
+                                    "$ref": "json-schemas/api/_questionnaires_{questionnaireId}_template-metadata/get/res/200.json"
                                 },
                                 "example": {
                                     "data": {
@@ -774,6 +767,152 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
+        },
+        "/questionnaires/letters": {
+            "post": {
+                "tags": ["Questionnaires", "Letters"],
+                "summary": "Create a new questionnaire from a specified letter template",
+                "description": "Create a questionnaire for a letter",
+                "operationId": "createLetters",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/apiVersion"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Questionnaire template id",
+                    "required": true,
+                    "content": {
+                        "application/vnd.api+json": {
+                            "schema": {
+                                "$ref": "./json-schemas/api/_questionnaires_letters/post/req/201.json"
+                            },
+                            "example": {
+                                "data": {
+                                    "type": "questionnaires",
+                                    "attributes": {
+                                        "template": {
+                                            "type": "letter-template",
+                                            "version": "1.0.0",
+                                            "sections": {},
+                                            "routes": {},
+                                            "answers": {},
+                                            "progress": [],
+                                            "taxonomies": {},
+                                            "meta": {}
+                                        },
+                                        "owner": {
+                                            "owner-id": "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+                                            "is-authenticated": true,
+                                            "contact-preference": "E",
+                                            "email": "example@f81d4fae-7dec-11d0-a765-00a0c91e6bf6.com"
+                                        },
+                                        "origin": {
+                                            "channel": "dashboard"
+                                        },
+                                        "system": {
+                                            "letter-id": "f81d4fae-7dec-11d0-a765-123456781234",
+                                            "letter-type": "tx45",
+                                            "case-reference": "99-999999",
+                                            "expiry-date": "2027-01-01",
+                                            "external-id": "urn:uuid:f81d4fae-7dec-11d0-a765-123456781234"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/vnd.api+json": {
+                                "schema": {
+                                    "$ref": "./json-schemas/api/_questionnaires/post/res/201.json"
+                                },
+                                "example": {
+                                    "data": {
+                                        "type": "questionnaires",
+                                        "id": "p-some-id",
+                                        "attributes": {
+                                            "id": "08dbd0d2-6cee-49e5-a55f-35b31ac4aa9e",
+                                            "type": "questionnaires",
+                                            "version": "1.0.0",
+                                            "routes": {
+                                                "initial": "p-some-id"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            },
+            "delete": {
+                "tags": ["Questionnaires", "Letters"],
+                "summary": "Delete questionnaires for a collection of letter ids",
+                "description": "Delete questionnaires associated with the supplied letter ids",
+                "operationId": "deleteLetters",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/apiVersion"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Collection of letter ids to delete",
+                    "required": true,
+                    "content": {
+                        "application/vnd.api+json": {
+                            "schema": {
+                                "$ref": "./json-schemas/api/_questionnaires_letters/delete/req/204.json"
+                            },
+                            "example": {
+                                "data": {
+                                    "type": "questionnaires",
+                                    "attributes": {
+                                        "questionnaireIds": [
+                                            "f81d4fae-7dec-11d0-a765-123456781234",
+                                            "f81d4fae-7dec-11d0-a765-123456781235",
+                                            "f81d4fae-7dec-11d0-a765-123456781236"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "$ref": "#/components/responses/BadRequest"

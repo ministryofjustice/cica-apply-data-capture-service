@@ -385,13 +385,13 @@ function questionnaireDAL(spec) {
         return result;
     }
 
-    async function updateQuestionnaireExpiresDate(questionnaireId) {
+    async function updateQuestionnaireExpiresDate(questionnaireId, expiresAt) {
         let result;
 
         try {
             result = await db.query(
-                'UPDATE questionnaire SET expires = current_timestamp WHERE id = $1',
-                [questionnaireId]
+                'UPDATE questionnaire SET expires = COALESCE($2::timestamptz, CURRENT_TIMESTAMP) WHERE id = $1',
+                [questionnaireId, expiresAt]
             );
             if (result.rowCount === 0) {
                 throw new VError(

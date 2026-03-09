@@ -17,7 +17,7 @@ beforeEach(() => {
 describe('Openapi version 2023-05-17 validation', () => {
     jest.doMock('./questionnaire-service.js', () => {
         const questionnaireServiceMock = {
-            createQuestionnaire: jest.fn(({templateName}) => {
+            createQuestionnaire: jest.fn(templateName => {
                 if (templateName === 'this-does-not-exist') {
                     throw new VError(
                         {
@@ -78,13 +78,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         `Resource /api/questionnaires/${id}/sections/${section}/answers does not exist`
                     );
                 }
-                return {
-                    data: {
-                        type: 'answers',
-                        id: 'id',
-                        attributes: 'coerced answers'
-                    }
-                };
+                return 'ok';
             }),
             updateQuestionnaireSubmissionStatus: jest.fn(() => {
                 return 'ok';
