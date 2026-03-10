@@ -39,7 +39,7 @@
         "pino-std-serializers": "^6.2.2",
         "q-expressions": "github:CriminalInjuriesCompensationAuthority/q-expressions#v1.1.0",
         "q-router": "github:CriminalInjuriesCompensationAuthority/q-router#semver:3.2.2",
-        "q-templates-application": "github:CriminalInjuriesCompensationAuthority/q-templates-application#semver:v12.4.8",
+        "q-templates-application": "github:CriminalInjuriesCompensationAuthority/q-templates-application#capp-90-delay-in-reporting-crime",
         "q-templates-application-12_4_0": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.4.0",
         "q-templates-application-12_4_1": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.4.1",
         "q-templates-application-12_4_2": "github:CriminalInjuriesCompensationAuthority/q-templates-application#v12.4.2",
