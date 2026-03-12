@@ -21,16 +21,11 @@ defaults.createQuestionnaireDAL = require('./questionnaire-dal');
 
 defaults.apiVersion = '2023-05-17';
 
-defaults.createTaskRunner = require('./questionnaire/utils/taskRunner');
-const sendNotifyMessageToSQS = require('./questionnaire/utils/taskRunner/tasks/postToNotify');
-const sequential = require('./questionnaire/utils/taskRunner/tasks/sequential');
-
 function createQuestionnaireService({
     logger,
     apiVersion = defaults.apiVersion,
     ownerId,
-    createQuestionnaireDAL = defaults.createQuestionnaireDAL,
-    createTaskRunner = defaults.createTaskRunner
+    createQuestionnaireDAL = defaults.createQuestionnaireDAL
 } = {}) {
     const db = createQuestionnaireDAL({logger, ownerId});
 
@@ -68,92 +63,53 @@ function createQuestionnaireService({
         return false;
     }
 
-    async function createQuestionnaire({
+    async function createQuestionnaire(
         templateName,
         ownerData,
         originData,
         externalData,
-        templateVersion,
-        userData,
-        preMadeQuestionnaire
-    }) {
-        let questionnaire;
-        if (preMadeQuestionnaire === undefined) {
-            const templateAsJson = await templateService.getTemplateAsJson(
-                templateName,
-                templateVersion
-            );
-            questionnaire = {
-                id: crypto.randomUUID(),
-                ...JSON.parse(templateAsJson)
-            };
-
-            if (!ownerData) {
-                throw new VError(
-                    {
-                        name: 'OwnerNotFound'
-                    },
-                    `Owner data must be defined`
-                );
-            }
-
-            questionnaire.answers = {
-                owner: {
-                    'owner-id': ownerData.id,
-                    'is-authenticated': ownerData.isAuthenticated
-                }
-            };
-
-            if (originData) {
-                questionnaire.answers.origin = {
-                    channel: originData.channel
-                };
-            }
-
-            if (externalData) {
-                questionnaire.answers.system = {
-                    'external-id': externalData.id
-                };
-            }
-
-            if (userData) {
-                questionnaire.meta.personalisation = userData.personalisation;
-                questionnaire.answers.system['case-reference'] = userData.caseReference;
-                questionnaire.answers.system['expiry-date'] =
-                    userData.personalisation['expiry-date'];
-            }
-        } else {
-            // TODO: This will likely need some validation to reduce attack risk
-            // TODO: Not sure if we want to populate any of this with the other parameters. For now assume not
-            questionnaire = preMadeQuestionnaire;
-        }
-        await db.createQuestionnaire(questionnaire.id, questionnaire);
-
-        const taskImplementations = {
-            sendNotifyMessageToSQS
+        templateVersion
+    ) {
+        const templateAsJson = await templateService.getTemplateAsJson(
+            templateName,
+            templateVersion
+        );
+        const questionnaire = {
+            id: crypto.randomUUID(),
+            ...JSON.parse(templateAsJson)
         };
 
-        if (questionnaire.onCreate) {
-            const onCreateTaskDefinition = JSON.parse(JSON.stringify(questionnaire.onCreate));
-            const taskRunner = createTaskRunner({
-                taskImplementations: {
-                    sequential,
-                    ...taskImplementations
+        if (!ownerData) {
+            throw new VError(
+                {
+                    name: 'OwnerNotFound'
                 },
-                context: {
-                    logger,
-                    questionnaireDef: questionnaire,
-                    type: 'onCreate'
-                }
-            });
-            try {
-                await taskRunner.run(onCreateTaskDefinition);
-            } catch (error) {
-                logger.info(error);
-            }
+                `Owner data must be defined`
+            );
         }
 
-        if (ownerData?.isAuthenticated) {
+        questionnaire.answers = {
+            owner: {
+                'owner-id': ownerData.id,
+                'is-authenticated': ownerData.isAuthenticated
+            }
+        };
+
+        if (originData) {
+            questionnaire.answers.origin = {
+                channel: originData.channel
+            };
+        }
+
+        if (externalData) {
+            questionnaire.answers.system = {
+                'external-id': externalData.id
+            };
+        }
+
+        await db.createQuestionnaire(questionnaire.id, questionnaire);
+
+        if (ownerData.isAuthenticated) {
             await updateExpiryForAuthenticatedOwner(questionnaire.id, ownerData.id);
         }
 
@@ -690,40 +646,6 @@ function createQuestionnaireService({
         };
     }
 
-    async function updateQuestionnaireExpiresDate(questionnaireId) {
-        return db.updateQuestionnaireExpiresDate(questionnaireId);
-    }
-
-    async function updateQuestionnairesExpiresDate(questionnaireIds) {
-        let notFoundCount = 0;
-        const results = await Promise.all(
-            questionnaireIds.map(async questionnaireId => {
-                try {
-                    // Check the questionnaire exists first
-                    await getQuestionnaire(questionnaireId);
-                    // If it exists, try and delete it
-                    await updateQuestionnaireExpiresDate(questionnaireId);
-                    return 'success';
-                } catch (err) {
-                    if (err.name === 'ResourceNotFound') {
-                        // If the questionnaire doesn't exist log it but don't fail it
-                        logger.info(err.message);
-                        notFoundCount += 1;
-                        return 'notFound';
-                    }
-                    // If any other errors occur they are legitimate DB errors
-                    throw err;
-                }
-            })
-        );
-        logger.info(
-            `Successfully deleted ${questionnaireIds.length - notFoundCount} out of ${
-                questionnaireIds.length
-            } questionnaires`
-        );
-        return results;
-    }
-
     return Object.freeze({
         createQuestionnaire,
         createAnswers,
@@ -739,8 +661,7 @@ function createQuestionnaireService({
         updateExpiryForAuthenticatedOwner,
         getQuestionnaireIdsBySubmissionStatus,
         getTemplateMetadata,
-        getTemplateMetadataById,
-        updateQuestionnairesExpiresDate
+        getTemplateMetadataById
     });
 }
 

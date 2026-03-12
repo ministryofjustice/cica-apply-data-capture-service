@@ -7,6 +7,7 @@ const createQuestionnaireService = require('./questionnaire-service');
 const permissions = require('../middleware/route-permissions');
 const metadataRouter = require('./metadata/metadata-routes.js');
 const submissionsRouter = require('./submissions/submissions-routes.js');
+const lettersRouter = require('./letters/letters-routes.js');
 
 const router = express.Router();
 const rxTemplateName = /^[a-zA-Z0-9-]{1,30}$/;
@@ -28,28 +29,20 @@ router.route('/').post(permissions('create:questionnaires'), async (req, res, ne
             throw err;
         }
 
-        const {
-            templateName,
-            owner,
-            origin,
-            external,
-            templateVersion,
-            userData
-        } = req.body.data.attributes;
+        const {templateName, owner, origin, external, templateVersion} = req.body.data.attributes;
 
         const questionnaireService = createQuestionnaireService({
             logger: req.log,
             apiVersion: req.get('Dcs-Api-Version'),
             ownerId: owner?.id
         });
-        const response = await questionnaireService.createQuestionnaire({
+        const response = await questionnaireService.createQuestionnaire(
             templateName,
-            ownerData: owner,
-            originData: origin,
-            externalData: external,
-            templateVersion,
-            userData
-        });
+            owner,
+            origin,
+            external,
+            templateVersion
+        );
 
         res.status(201).json(response);
     } catch (err) {
@@ -59,6 +52,7 @@ router.route('/').post(permissions('create:questionnaires'), async (req, res, ne
 
 router.use(metadataRouter);
 router.use(submissionsRouter);
+router.use(lettersRouter);
 
 router
     .route('/:questionnaireId/sections/answers')
@@ -217,21 +211,5 @@ router
             next(err);
         }
     });
-
-router.route('/delete').post(permissions('admin'), async (req, res, next) => {
-    try {
-        const {questionnaireIds} = req.params;
-        const questionnaireService = createQuestionnaireService({
-            logger: req.log,
-            apiVersion: req.get('Dcs-Api-Version')
-        });
-        const response = await questionnaireService.updateQuestionnairesExpiresDate(
-            questionnaireIds
-        );
-        res.status(204).json(response);
-    } catch (err) {
-        next(err);
-    }
-});
 
 module.exports = router;

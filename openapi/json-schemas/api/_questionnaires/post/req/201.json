@@ -15,7 +15,15 @@
                 "attributes": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["templateName", "owner"],
+                    "required": ["owner"],
+                    "oneOf": [
+                        {
+                            "required": ["templateName"]
+                        },
+                        {
+                            "required": ["template"]
+                        }
+                    ],
                     "properties": {
                         "templateName": {
                             "$ref": "../../../../models/definitions/questionnaire-template-name.json"
@@ -57,20 +65,7 @@
                         "templateVersion": {
                             "$ref": "../../../../models/definitions/semver.json"
                         },
-                        "userData": {
-                            "type": "object",
-                            "required": ["personalisation", "caseReference"],
-                            "additionalProperties": false,
-                            "properties": {
-                                "personalisation": {
-                                    "type": "object"
-                                },
-                                "caseReference": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "preMadeQuestionnaire": {
+                        "template": {
                             "type": "object",
                             "required": [
                                 "type",
@@ -97,7 +92,8 @@
                                 "taxonomies": {"type": "object"},
                                 "onSubmit": {"type": "object"},
                                 "onCreate": {"type": "object"},
-                                "meta": {"type": "object"}
+                                "meta": {"type": "object"},
+                                "inputSchema": {"type": "object"}
                             }
                         }
                     }
