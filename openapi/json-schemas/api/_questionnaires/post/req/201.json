@@ -15,15 +15,7 @@
                 "attributes": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["owner"],
-                    "oneOf": [
-                        {
-                            "required": ["templateName"]
-                        },
-                        {
-                            "required": ["template"]
-                        }
-                    ],
+                    "required": ["templateName", "owner"],
                     "properties": {
                         "templateName": {
                             "$ref": "../../../../models/definitions/questionnaire-template-name.json"
@@ -64,37 +56,6 @@
                         },
                         "templateVersion": {
                             "$ref": "../../../../models/definitions/semver.json"
-                        },
-                        "template": {
-                            "type": "object",
-                            "required": [
-                                "type",
-                                "version",
-                                "sections",
-                                "routes",
-                                "answers",
-                                "progress",
-                                "taxonomies",
-                                "meta"
-                            ],
-                            "additionalProperties": false,
-                            "properties": {
-                                "type": {
-                                    "$ref": "../../../../models/definitions/questionnaire-template-name.json"
-                                },
-                                "version": {
-                                    "$ref": "../../../../models/definitions/semver.json"
-                                },
-                                "sections": {"type": "object"},
-                                "routes": {"type": "object"},
-                                "answers": {"type": "object"},
-                                "progress": {"type": "array"},
-                                "taxonomies": {"type": "object"},
-                                "onSubmit": {"type": "object"},
-                                "onCreate": {"type": "object"},
-                                "meta": {"type": "object"},
-                                "inputSchema": {"type": "object"}
-                            }
                         }
                     }
                 }
