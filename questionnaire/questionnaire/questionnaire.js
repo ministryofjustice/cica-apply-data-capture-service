@@ -251,7 +251,7 @@ function createQuestionnaire({
         if (sectionDefinitionVars !== undefined && allowSummary === true) {
             const resolvedVars = getResolvedVars(sectionId, sectionDefinitionVars);
             if (resolvedVars.summary) {
-                if (sectionDefinition.schema.options) {
+                if (sectionDefinition.schema.options?.ordering) {
                     const sortingInstructions = sectionDefinition.schema.options.ordering;
                     resolvedVars.summary = sortThemedAnswers(
                         resolvedVars.summary,
@@ -346,8 +346,8 @@ function createQuestionnaire({
         return undefined;
     }
 
-    function getPermittedActions() {
-        const actions = questionnaireDefinition?.meta?.onComplete?.actions;
+    function getPermittedActions(type = 'onComplete') {
+        const actions = questionnaireDefinition?.meta?.[type]?.actions;
 
         if (actions) {
             const answersAndRoles = {
