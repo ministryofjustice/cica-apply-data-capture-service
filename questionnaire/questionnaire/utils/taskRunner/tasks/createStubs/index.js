@@ -68,7 +68,10 @@ async function createStubs({questionnaire, logger, type}) {
                     // Create the new questionnaire
                     stub.type = 'stub';
                     await questionnaireService.createQuestionnaire({
-                        owner: questionnaire.owner,
+                        ownerData: {
+                            id: stub.answers.owner['owner-id'],
+                            isAuthenticated: stub.answers.owner['is-authenticated']
+                        },
                         preMadeQuestionnaire: stub
                     });
                     logger.info(
