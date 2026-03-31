@@ -54,7 +54,7 @@ describe('replace-json-pointer', () => {
                 bar: 'bar'
             }
         });
-        expect(result).toBe(content);
+        expect(result).toBe('foo  baz');
     });
 
     it('should throw if the JSON pointer maps to a non-primitive value e.g. Object/Array', () => {

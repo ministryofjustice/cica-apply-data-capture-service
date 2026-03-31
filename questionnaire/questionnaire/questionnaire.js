@@ -245,7 +245,14 @@ function createQuestionnaire({
         const sectionDefinitionVars = getSectionDefinitionVars(sectionDefinition);
         const allQuestionnaireAnswers = {answers: getAnswers()};
         const orderedValueTransformers = [];
-        const valueInterpolator = getValueInterpolator(allQuestionnaireAnswers);
+
+        const fullData = {answers: getAnswers()};
+        const meta = getMetadata();
+        if (meta?.personalisation) {
+            fullData.meta = meta;
+        }
+
+        const valueInterpolator = getValueInterpolator(fullData);
 
         if (taskListService.isTaskListSchema({sectionSchema: sectionDefinition.schema})) {
             taskListService.updateTaskListSchema(questionnaireDefinition, sectionDefinition);
@@ -283,12 +290,6 @@ function createQuestionnaire({
         }
 
         orderedValueTransformers.push(valueInterpolator);
-
-        const meta = {meta: getMetadata()};
-        if (meta.meta?.personalisation) {
-            const metaValueInterpolator = getValueInterpolator(meta);
-            orderedValueTransformers.push(metaValueInterpolator);
-        }
 
         // TODO: DON'T MUTATE ORIGINAL!
         // contextualise > replace vars > interpolate
@@ -361,34 +362,33 @@ function createQuestionnaire({
         const valueTransformers = [];
 
         if (actions) {
-            const answersAndRoles = {
+            const answersAndRolesAndMeta = {
                 answers: getAnswers(),
                 attributes: {
                     q__roles: getRoles()
                 }
             };
 
-            const meta = {meta: getMetadata()};
+            const meta = getMetadata();
+            if (meta?.personalisation) {
+                answersAndRolesAndMeta.meta = meta;
+            }
 
             const permittedActions = actions.filter(action => {
                 if ('cond' in action) {
-                    const isPermittedAction =
-                        qExpression.evaluate(action.cond, answersAndRoles) ||
-                        qExpression.evaluate(action.cond, meta);
+                    const isPermittedAction = qExpression.evaluate(
+                        action.cond,
+                        answersAndRolesAndMeta
+                    );
                     return isPermittedAction;
                 }
 
                 return true;
             });
-            const valueInterpolator = getValueInterpolator(answersAndRoles);
-            const jsonExpressionEvaluator = getJsonExpressionEvaluator(answersAndRoles);
+            const valueInterpolator = getValueInterpolator(answersAndRolesAndMeta);
+            const jsonExpressionEvaluator = getJsonExpressionEvaluator(answersAndRolesAndMeta);
             valueTransformers.push(jsonExpressionEvaluator);
             valueTransformers.push(valueInterpolator);
-
-            if (meta.meta?.personalisation) {
-                const metaValueInterpolator = getValueInterpolator(meta);
-                valueTransformers.push(metaValueInterpolator);
-            }
 
             const resolvedActions = permittedActions.map(permittedAction => {
                 if ('data' in permittedAction) {
