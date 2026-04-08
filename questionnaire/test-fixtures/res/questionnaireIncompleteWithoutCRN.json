@@ -315,45 +315,83 @@
             }
         },
         "p-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police": {
-            "schema": {
-                "required": [
-                    "q-applicant-explain-reason-for-delay-reporting",
-                    "q-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police"
-                ],
-                "errorMessage": {
-                    "required": {
-                        "q-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police": "Explain the reasons for the delay in reporting the crime to the police",
-                        "q-applicant-explain-reason-for-delay-reporting": "Select if you were under 18, unable to report the crime or other reasons"
+            "l10n": {
+                "vars": {
+                    "ns": "p-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police",
+                    "lng": "en",
+                    "context": {
+                        "$data": "/answers/p-applicant-who-are-you-applying-for/q-applicant-who-are-you-applying-for"
                     }
                 },
-                "additionalProperties": false,
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "type": "object",
-                "properties": {
-                    "q-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police": {
-                        "errorMessage": {"maxLength": "Explanation must be 500 characters or less"},
-                        "maxLength": 500,
-                        "type": "string",
-                        "title": "Briefly explain these reasons"
-                    },
-                    "q-applicant-explain-reason-for-delay-reporting": {
-                        "description": "Select all options that apply to you.",
-                        "title": "Select reasons for the delay in reporting the crime to the police",
-                        "items": {
-                            "anyOf": [
-                                {"const": "i-was-under-18", "title": "I was under 18"},
-                                {
-                                    "const": "unable-to-report-crime",
-                                    "title": "Unable to report the crime"
-                                },
-                                {"const": "other", "title": "Other reasons"}
-                            ]
-                        },
-                        "maxItems": 3,
-                        "uniqueItems": true,
-                        "type": "array"
+                "translations": [
+                    {
+                        "language": "en",
+                        "namespace": "p-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police",
+                        "resources": {
+                            "q-applicant-explain-reason-for-delay-reporting": {
+                                "title": "Tell us why the crime could not be reported sooner",
+                                "title_someone-else": "Tell us why the crime could not be reported sooner",
+                                "description": "To be eligible for compensation, the crime must have been reported as soon as possible.",
+                                "description_someone-else": "To be eligible for compensation, the crime must have been reported as soon as possible.",
+                                "error": {
+                                    "required": "Explain why the crime could not be reported sooner",
+                                    "required_someone-else": "Explain why the crime could not be reported sooner"
+                                }
+                            }
+                        }
                     }
-                }
+                ]
+            },
+            "schema": {
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "allOf": [
+                    {
+                        "title": "Reporting the crime to the police",
+                        "meta": {
+                            "compositeId": "delay-in-reporting-crime",
+                            "classifications": {
+                                "theme": "crime"
+                            }
+                        },
+                        "required": ["q-applicant-explain-reason-for-delay-reporting"],
+                        "propertyNames": {
+                            "enum": ["q-applicant-explain-reason-for-delay-reporting"]
+                        },
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "delay-in-reporting-description": {
+                                        "description": "l10nt:q-applicant-explain-reason-for-delay-reporting.description{?lng,context,ns}"
+                                    }
+                                }
+                            },
+                            {
+                                "properties": {
+                                    "q-applicant-explain-reason-for-delay-reporting": {
+                                        "type": "string",
+                                        "title": "l10nt:q-applicant-explain-reason-for-delay-reporting.title{?lng,context,ns}",
+                                        "maxLength": 500,
+                                        "errorMessage": {
+                                            "maxLength": "Explanation must be 500 characters or less"
+                                        },
+                                        "meta": {
+                                            "classifications": {
+                                                "theme": "crime"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        "errorMessage": {
+                            "required": {
+                                "q-applicant-explain-reason-for-delay-reporting": "l10nt:q-applicant-explain-reason-for-delay-reporting.error.required{?lng,context,ns}"
+                            }
+                        }
+                    }
+                ],
+                "additionalProperties": false
             }
         },
         "p--before-you-continue": {
