@@ -71,7 +71,6 @@
         "yamljs": "^0.3.0"
     },
     "overrides": {
-        "fast-xml-parser": "5.5.7",
         "js-yaml": "4.1.1"
     },
     "license": "MIT"
