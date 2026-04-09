@@ -16693,7 +16693,7 @@
                         "language": "en",
                         "namespace": "p-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police",
                         "resources": {
-                            "q-applicant-explain-reason-for-delay-reporingt": {
+                            "q-applicant-explain-reason-for-delay-reporting": {
                                 "title": "Tell us why the crime could not be reported sooner",
                                 "title_someone-else": "Tell us why the crime could not be reported sooner",
                                 "description": "To be eligible for compensation, the crime must have been reported as soon as possible.",
