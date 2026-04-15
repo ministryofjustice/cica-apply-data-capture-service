@@ -9,7 +9,8 @@
         "answers",
         "progress",
         "taxonomies",
-        "meta"
+        "meta",
+        "attributes"
     ],
     "additionalProperties": false,
     "properties": {
@@ -27,6 +28,7 @@
         "onSubmit": {"type": "object"},
         "onCreate": {"type": "object"},
         "meta": {"type": "object"},
-        "inputSchema": {"type": "object"}
+        "inputSchema": {"type": "object"},
+        "attributes": {"type": "object"}
     }
 }

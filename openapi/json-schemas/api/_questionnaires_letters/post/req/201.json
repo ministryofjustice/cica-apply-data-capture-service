@@ -19,12 +19,12 @@
                     "properties": {
                         "owner": {
                             "type": "object",
-                            "required": ["id", "isAuthenticated", "contact-preference"],
+                            "required": ["owner-id", "is-authenticated", "contact-preference"],
                             "properties": {
-                                "id": {
+                                "owner-id": {
                                     "$ref": "../../../../models/definitions/owner-id.json"
                                 },
-                                "isAuthenticated": {
+                                "is-authenticated": {
                                     "type": "boolean"
                                 },
                                 "contact-preference": {
@@ -32,10 +32,10 @@
                                     "enum": ["E", "T"]
                                 },
                                 "email": {
-                                    "type": "string"
+                                    "type": ["string", "null"]
                                 },
                                 "phone": {
-                                    "type": "string"
+                                    "type": ["string", "null"]
                                 }
                             }
                         },
