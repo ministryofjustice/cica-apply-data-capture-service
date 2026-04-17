@@ -84,12 +84,11 @@ function createQuestionnaireService({
                 logger.info(error);
             }
         }
-
-        const systemData = questionnaire?.answers?.system;
-        if (systemData?.['expiry-date']) {
-            const expiresAt = new Date(systemData?.['expiry-date']);
-            await updateQuestionnaireExpiresDate(questionnaire.id, expiresAt);
-        }
+        // Letters should expire at midnight 3 years after being issued
+        const expireDate = new Date();
+        expireDate.setHours(0, 0, 0);
+        expireDate.setFullYear(expireDate.getFullYear() + 3);
+        await updateQuestionnaireExpiresDate(questionnaire.id, expireDate);
 
         return {
             data: questionnaireResource({questionnaire}, supportsTaskList(questionnaire))

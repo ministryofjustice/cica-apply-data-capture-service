@@ -14,6 +14,9 @@ jest.doMock('../../../../../questionnaire-dal', () => {
     const dalServiceMock = {
         createQuestionnaire: jest.fn(() => {
             return 'ok!';
+        }),
+        updateQuestionnaireExpiresDate: jest.fn(() => {
+            return 'ok!';
         })
     };
 
