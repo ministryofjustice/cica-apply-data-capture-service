@@ -658,13 +658,15 @@ function createQuestionnaireService({
         const questionnaire = await getQuestionnaire(questionnaireId);
         const personalisationData = questionnaire.meta.personalisation;
         const {summaryBlocks} = questionnaire.meta;
+        const caseReferenceNumber = await retrieveCaseReferenceNumber(questionnaireId);
         const response = {
             data: {
                 id: questionnaireId,
                 type: 'templateMetadata',
                 attributes: {
                     personalisation: {...personalisationData},
-                    summaryBlocks: {...summaryBlocks}
+                    summaryBlocks: {...summaryBlocks},
+                    caseReferenceNumber
                 }
             }
         };
@@ -676,12 +678,14 @@ function createQuestionnaireService({
         const metadata = results.map(data => {
             const personalisationData = data.meta.personalisation;
             const {summaryBlocks} = data.meta;
+            const caseReferenceNumber = data.caseReference;
             return {
                 type: 'templateMetadata',
                 id: data.id,
                 attributes: {
                     personalisation: {...personalisationData},
-                    summaryBlocks: {...summaryBlocks}
+                    summaryBlocks: {...summaryBlocks},
+                    caseReferenceNumber
                 }
             };
         });
