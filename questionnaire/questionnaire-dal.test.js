@@ -354,7 +354,7 @@ describe('questionnaire data access layer', () => {
     });
 
     describe('getTemplateMetadataByOwner', () => {
-        const query = `SELECT id, questionnaire -> 'meta' AS "meta" FROM questionnaire WHERE questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $1`;
+        const query = `SELECT id, questionnaire -> 'meta' AS "meta", questionnaire -> 'answers' -> 'system' ->> 'case-reference' AS "caseReference" FROM questionnaire WHERE questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $1`;
         it('Should run a get template metadata query and filter by owner', async () => {
             const questionnaireDAL = createQuestionnaireDAL({logger: jest.fn(), ownerId});
             await questionnaireDAL.getTemplateMetadataByOwner();

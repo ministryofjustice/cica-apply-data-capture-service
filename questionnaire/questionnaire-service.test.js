@@ -236,7 +236,7 @@ jest.doMock('./questionnaire-dal', () => {
             return 'ok!';
         }),
         getTemplateMetadataByOwner: jest.fn(() => {
-            return [{id: validQuestionnaireId, meta: letterMetadata}];
+            return [{id: validQuestionnaireId, meta: letterMetadata, caseReference: '123456'}];
         }),
         updateQuestionnaireExpiresDate: jest.fn(questionnaireId => {
             if (questionnaireId === incompatibleQuestionnaireId) {
@@ -757,7 +757,8 @@ describe('Questionnaire Service', () => {
                     type: 'templateMetadata',
                     attributes: {
                         personalisation: expect.any(Object),
-                        summaryBlocks: expect.any(Object)
+                        summaryBlocks: expect.any(Object),
+                        caseReferenceNumber: '19\\751194'
                     }
                 });
             });
@@ -771,7 +772,8 @@ describe('Questionnaire Service', () => {
                         type: 'templateMetadata',
                         attributes: {
                             personalisation: expect.any(Object),
-                            summaryBlocks: expect.any(Object)
+                            summaryBlocks: expect.any(Object),
+                            caseReferenceNumber: '123456'
                         }
                     }
                 ]);
