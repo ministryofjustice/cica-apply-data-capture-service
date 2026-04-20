@@ -10,7 +10,6 @@ const config = {
 process.env.DCS_JWT_SECRET = '123';
 process.env.DCS_LOG_LEVEL = 'silent';
 process.env.NOTIFY_API_KEY = '123apiKey';
-process.env.WEBHOOK_DEV_REPORTER_SLACK = 'webhook-url';
 process.env.APP_ENV = 'test';
 process.env.MESSAGE_BUS_CREDENTIALS = 'some-credentials';
 process.env.DCS_SQS_ACCESS_KEY_ID = 'dummy_access_key';
@@ -20,7 +19,7 @@ process.env.NOTIFY_AWS_SQS_ID = 'dummy_notify_queue';
 process.env.S3_DIRECTORY = 'test';
 
 config.coverageThreshold = {
-    './!(db)/!(questionnaire-dal|questionnaire-service).js': {
+    './!(db)/!(questionnaire-dal).js': {
         branches: 60,
         functions: 60,
         lines: 60,
@@ -31,12 +30,6 @@ config.coverageThreshold = {
         functions: 0,
         lines: 35,
         statements: 35
-    },
-    './questionnaire/questionnaire-service.js': {
-        branches: 50,
-        functions: 60,
-        lines: 60,
-        statements: 60
     }
 };
 

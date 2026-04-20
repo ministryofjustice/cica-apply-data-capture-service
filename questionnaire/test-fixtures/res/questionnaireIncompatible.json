@@ -321,45 +321,83 @@
             }
         },
         "p-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police": {
-            "schema": {
-                "required": [
-                    "q-applicant-explain-reason-for-delay-reporting",
-                    "q-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police"
-                ],
-                "errorMessage": {
-                    "required": {
-                        "q-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police": "Select if you were under 18, unable to report the crime or other reasons",
-                        "q-applicant-explain-reason-for-delay-reporting": "Explain the reasons for the delay in reporting the crime to the police"
+            "l10n": {
+                "vars": {
+                    "ns": "p-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police",
+                    "lng": "en",
+                    "context": {
+                        "$data": "/answers/p-applicant-who-are-you-applying-for/q-applicant-who-are-you-applying-for"
                     }
                 },
-                "additionalProperties": false,
-                "$schema": "http://json-schema.org/draft-07/schema#",
-                "type": "object",
-                "properties": {
-                    "q-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police": {
-                        "description": "Select all options that apply to you.",
-                        "title": "Select reasons for the delay in reporting the crime to the police",
-                        "items": {
-                            "anyOf": [
-                                {"const": "i-was-under-18", "title": "I was under 18"},
-                                {
-                                    "const": "unable-to-report-crime",
-                                    "title": "Unable to report the crime"
-                                },
-                                {"const": "other", "title": "Other reasons"}
-                            ]
-                        },
-                        "maxItems": 3,
-                        "uniqueItems": true,
-                        "type": "array"
-                    },
-                    "q-applicant-explain-reason-for-delay-reporting": {
-                        "errorMessage": {"maxLength": "Explanation must be 500 characters or less"},
-                        "maxLength": 500,
-                        "type": "string",
-                        "title": "Briefly explain these reasons"
+                "translations": [
+                    {
+                        "language": "en",
+                        "namespace": "p-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police",
+                        "resources": {
+                            "q-applicant-explain-reason-for-delay-reporting": {
+                                "title": "Tell us why the crime could not be reported sooner",
+                                "title_someone-else": "Tell us why the crime could not be reported sooner",
+                                "description": "To be eligible for compensation, the crime must have been reported as soon as possible.",
+                                "description_someone-else": "To be eligible for compensation, the crime must have been reported as soon as possible.",
+                                "error": {
+                                    "required": "Explain why the crime could not be reported sooner",
+                                    "required_someone-else": "Explain why the crime could not be reported sooner"
+                                }
+                            }
+                        }
                     }
-                }
+                ]
+            },
+            "schema": {
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "allOf": [
+                    {
+                        "title": "Reporting the crime to the police",
+                        "meta": {
+                            "compositeId": "delay-in-reporting-crime",
+                            "classifications": {
+                                "theme": "crime"
+                            }
+                        },
+                        "required": ["q-applicant-explain-reason-for-delay-reporting"],
+                        "propertyNames": {
+                            "enum": ["q-applicant-explain-reason-for-delay-reporting"]
+                        },
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "delay-in-reporting-description": {
+                                        "description": "l10nt:q-applicant-explain-reason-for-delay-reporting.description{?lng,context,ns}"
+                                    }
+                                }
+                            },
+                            {
+                                "properties": {
+                                    "q-applicant-explain-reason-for-delay-reporting": {
+                                        "type": "string",
+                                        "title": "l10nt:q-applicant-explain-reason-for-delay-reporting.title{?lng,context,ns}",
+                                        "maxLength": 500,
+                                        "errorMessage": {
+                                            "maxLength": "Explanation must be 500 characters or less"
+                                        },
+                                        "meta": {
+                                            "classifications": {
+                                                "theme": "crime"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        "errorMessage": {
+                            "required": {
+                                "q-applicant-explain-reason-for-delay-reporting": "l10nt:q-applicant-explain-reason-for-delay-reporting.error.required{?lng,context,ns}"
+                            }
+                        }
+                    }
+                ],
+                "additionalProperties": false
             }
         },
         "p--before-you-continue": {
@@ -440,7 +478,7 @@
                 "type": "object",
                 "properties": {
                     "confirmation": {
-                        "description": "\n                    {{ govukPanel({\n                        titleText: \"Application submitted\",\n                        html: '<p>Your reference number is <strong>||/answers/system/case-reference||</strong></p><p>We have sent a confirmation email to <strong>||/answers/p-applicant-enter-your-email-address/q-applicant-enter-your-email-address||</strong></p>'\n                    }) }}\n                    \n                    <p class=\"govuk-body-l\">Thank you for submitting your application.</p>\n                    <h2 class=\"govuk-heading-m\">What happens next</h2>\n                    <p class=\"govuk-body\">We will:</p>\n                    <ul class=\"govuk-list govuk-list--bullet\">\n                    <li>ask the police for evidence</li>\n                    <li>use the police evidence to make a decision</li>\n                    <li>send our decision letter by post</li>\n                    </ul>\n                    {{ govukWarningText({\n                        text: \"You must inform us immediately if any of the information you have given us changes, especially your address, telephone number or email address.\",\n                        iconFallbackText: \"Warning\"\n                    }) }}\n                    <p class=\"govuk-body\">You can contact our Customer Service Centre on 0300 003 3601. Select option 8 when the call is answered.</p>\n                    <h2 class=\"govuk-heading-m\">Help us improve this service</h2>\n                    <p class=\"govuk-body\">You can complete a short survey to help us improve this service.</p>\n                    <p class=\"govuk-body\">It does not ask for any details about your case, and has no effect on your application.</p>\n                    <p class=\"govuk-body\"><a href=\"https://www.surveymonkey.com/r/Privatebetafeedback\">Tell us what you think of our service</a> (takes 30 seconds)</p>\n            "
+                        "description": "\n                    {{ govukPanel({\n                        titleText: \"Application submitted\",\n                        html: '<p>Your reference number is <strong>||/answers/system/case-reference||</strong></p><p>We have sent a confirmation email to <strong>||/answers/p-applicant-enter-your-email-address/q-applicant-enter-your-email-address||</strong></p>'\n                    }) }}\n                    \n                    <p class=\"govuk-body-l\">Thank you for submitting your application.</p>\n                    <h2 class=\"govuk-heading-m\">What happens next</h2>\n                    <p class=\"govuk-body\">We will:</p>\n                    <ul class=\"govuk-list govuk-list--bullet\">\n                    <li>ask the police for evidence</li>\n                    <li>use the police evidence to make a decision</li>\n                    <li>send our decision letter by post</li>\n                    </ul>\n                    {{ govukWarningText({\n                        text: \"You must inform us immediately if any of the information you have given us changes, especially your address, telephone number or email address.\",\n                        iconFallbackText: \"Warning\"\n                    }) }}\n                    <p class=\"govuk-body\">You can contact our Customer Service Centre on 0300 003 3601. Select option 8 when the call is answered.</p>\n                    <h2 class=\"govuk-heading-m\">Help us improve this service</h2>\n                    <p class=\"govuk-body\">You can complete a short survey to help us improve this service.</p>\n                    <p class=\"govuk-body\">It does not ask for any details about your case, and has no effect on your application.</p>\n                    <p class=\"govuk-body\"><a href=\"https://www.smartsurvey.co.uk/s/cicaapplyfeedback\">Tell us what you think of our service</a> (takes 30 seconds)</p>\n            "
                     }
                 }
             }
@@ -674,7 +712,10 @@
                             {"const": 10000114, "title": "Essex Police"},
                             {"const": 10000128, "title": "Gloucestershire Constabulary"},
                             {"const": 10000140, "title": "Greater Manchester Police"},
-                            {"const": 10000150, "title": "Hampshire Constabulary"},
+                            {
+                                "const": 10000150,
+                                "title": "Hampshire and Isle of Wight Constabulary"
+                            },
                             {"const": 10000153, "title": "Hertfordshire Constabulary"},
                             {"const": 10000169, "title": "Humberside Police"},
                             {"const": 10000172, "title": "Kent Police"},
@@ -1372,9 +1413,6 @@
             "q-applicant-enter-your-telephone-number": "01412281570"
         },
         "p-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police": {
-            "q-applicant-select-reasons-for-the-delay-in-reporting-the-crime-to-police": [
-                "unable-to-report-crime"
-            ],
             "q-applicant-explain-reason-for-delay-reporting": "Unable to report the crime in time."
         },
         "p--before-you-continue": {},

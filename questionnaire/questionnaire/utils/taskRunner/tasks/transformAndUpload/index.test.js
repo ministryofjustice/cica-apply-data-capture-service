@@ -5,6 +5,8 @@ const VError = require('verror');
 const {transformQuestionnaire, transformAndUpload, mergeArrays, getDeclaration} = require('.');
 const questionnaireFixture = require('../test-fixtures/questionnaireCompleteForCheckYourAnswers');
 const questionnaireFixtureNoDeclaration = require('../test-fixtures/questionnaireCompleteForCheckYourAnswersNoDeclaration');
+const questionnaireFixtureWithOrigin = require('../test-fixtures/questionnaireCompleteForCheckYourAnswersWithOrigin');
+const questionnaireFixtureAuthenticatedFalse = require('../test-fixtures/questionnaireCompleteForCheckYourAnswersIsAuthnticatedFalse');
 const questionnaire = require('../../../../questionnaire');
 const mockDb = require('../../../../../questionnaire-dal');
 const mockS3 = require('../../../../../../services/s3');
@@ -24,7 +26,8 @@ describe('Transform and Upload task', () => {
     let result;
 
     beforeEach(() => {
-        result = transformQuestionnaire(questionnaireObj);
+        jest.resetModules();
+        jest.resetAllMocks();
     });
 
     it('Should error if input parameters are not arrays', () => {
@@ -41,10 +44,29 @@ describe('Transform and Upload task', () => {
     });
 
     it('Should transform correctly and include the correct CRN in the metadata.', () => {
+        result = transformQuestionnaire(questionnaireObj);
         expect(result.meta.caseReference).toBe('19\\751194');
     });
 
+    it('Should transform correctly and include the correct channel in the metadata.', () => {
+        const questionnaireObjWithOrigin = questionnaire({
+            questionnaireDefinition: questionnaireFixtureWithOrigin
+        });
+
+        const transformedQuestionnaire = transformQuestionnaire(questionnaireObjWithOrigin);
+        expect(transformedQuestionnaire).toHaveProperty('meta');
+        expect(transformedQuestionnaire.meta).toHaveProperty('channel');
+        expect(transformedQuestionnaire.meta.channel).toBe('dashboard');
+    });
+
+    it('Should transform correctly if no origin is present in the answers', () => {
+        result = transformQuestionnaire(questionnaireObj);
+        expect(result).toHaveProperty('meta');
+        expect(result.meta).not.toHaveProperty('channel');
+    });
+
     it('Should transform correctly with amalgamated injury codes and labels.', () => {
+        result = transformQuestionnaire(questionnaireObj);
         const injuries = result.themes
             .find(theme => {
                 return theme.id === 'injuries';
@@ -75,6 +97,7 @@ describe('Transform and Upload task', () => {
     });
 
     it('Should transform correctly with the correct declaration.', () => {
+        result = transformQuestionnaire(questionnaireObj);
         expect(result.declaration.id).toBe('p-applicant-declaration');
         expect(result.declaration.label).toContain('<div id="declaration">');
         expect(result.declaration.value).toBe('i-agree');
@@ -82,6 +105,7 @@ describe('Transform and Upload task', () => {
     });
 
     it('Should keep hideOnSummary flags.', () => {
+        result = transformQuestionnaire(questionnaireObj);
         const newOrExistingQuestion = result.themes
             .find(theme => {
                 return theme.id === 'about-application';
@@ -107,5 +131,77 @@ describe('Transform and Upload task', () => {
         });
 
         expect(result).toEqual('Success');
+    });
+
+    it('Should throw an error for unknown AWS communication failure ', async () => {
+        const error = new VError('Failed to retrieve modified date');
+        mockDb.mockImplementation(() => ({
+            getQuestionnaireModifiedDate: () => new Date('July 20, 2023 00:00:00')
+        }));
+
+        mockS3.mockImplementation(() => ({
+            uploadFile: () => {
+                throw error;
+            }
+        }));
+
+        await expect(async () => {
+            await transformAndUpload({
+                questionnaireDef: questionnaireFixture,
+                logger: loggerMock
+            });
+        }).rejects.toThrow(error);
+    });
+
+    it('Should throw an error for db communication failure ', async () => {
+        const error = new VError('Failed to retrieve modified date');
+        mockDb.mockImplementation(() => ({
+            getQuestionnaireModifiedDate: () => {
+                throw error;
+            }
+        }));
+
+        await expect(async () => {
+            await transformAndUpload({
+                questionnaireDef: questionnaireFixture,
+                logger: loggerMock
+            });
+        }).rejects.toThrow(error);
+    });
+
+    it('Should transform correctly and set isAuthenticated to true within in the metadata.', () => {
+        const questionnaireObjWithOrigin = questionnaire({
+            questionnaireDefinition: questionnaireFixtureWithOrigin
+        });
+
+        const transformedQuestionnaire = transformQuestionnaire(questionnaireObjWithOrigin);
+        expect(transformedQuestionnaire).toHaveProperty('meta');
+        expect(transformedQuestionnaire.meta).toHaveProperty('owner');
+        expect(transformedQuestionnaire.meta.owner).toHaveProperty('ownerId');
+        expect(transformedQuestionnaire.meta.owner.ownerId).toBe(
+            'urn:abc:test.uk:2001:A3vCv24d7c8mBNs'
+        );
+        expect(transformedQuestionnaire.meta.owner).toHaveProperty('isAuthenticated');
+        expect(transformedQuestionnaire.meta.owner.isAuthenticated).toBe(true);
+    });
+
+    it('Should transform correctly and set isAuthenticated to false within in the metadata.', () => {
+        const questionnaireObjWithOrigin = questionnaire({
+            questionnaireDefinition: questionnaireFixtureAuthenticatedFalse
+        });
+
+        const transformedQuestionnaire = transformQuestionnaire(questionnaireObjWithOrigin);
+        expect(transformedQuestionnaire).toHaveProperty('meta');
+        expect(transformedQuestionnaire.meta).toHaveProperty('owner');
+        expect(transformedQuestionnaire.meta.owner).toHaveProperty('ownerId');
+        expect(transformedQuestionnaire.meta.owner.ownerId).toBe('urn:A3vCv24d7c8mBNs');
+        expect(transformedQuestionnaire.meta.owner).toHaveProperty('isAuthenticated');
+        expect(transformedQuestionnaire.meta.owner.isAuthenticated).toBe(false);
+    });
+
+    it('Should transform correctly when owner is not present', () => {
+        const transformedQuestionnaire = transformQuestionnaire(questionnaireObj);
+        expect(transformedQuestionnaire).toHaveProperty('meta');
+        expect(transformedQuestionnaire.meta).not.toHaveProperty('owner');
     });
 });

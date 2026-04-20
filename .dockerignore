@@ -23,5 +23,6 @@
 !questionnaire
 !services
 !public
-
+!scripts
+!supported-template-versions.json
 

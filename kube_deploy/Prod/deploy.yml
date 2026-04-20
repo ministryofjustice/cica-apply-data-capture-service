@@ -10,6 +10,17 @@ spec:
         app: dcs-app-prod
     spec:
       serviceAccountName: irsadcs
+      initContainers:
+        - name: dcs-init-checks
+          image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/cica/cica-repo-dev:latest
+          command: ['npm', 'run', 'check-supported-versions']
+          imagePullPolicy: Always
+          env:
+            - name: DATABASE_URL_WITH_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: shared-secrets
+                  key: database_url_with_credentials
       containers:
         - name: data-capture-service
           image: 754256621582.dkr.ecr.eu-west-2.amazonaws.com/cica/cica-repo-prod:latest
@@ -73,21 +84,6 @@ spec:
                 secretKeyRef:
                   name: shared-secrets
                   key: session_duration
-            - name: WEBHOOK_TEAM_REPORTER_SLACK
-              valueFrom:
-                secretKeyRef:
-                  name: shared-secrets
-                  key: webhook_team_reporter_slack
-            - name: WEBHOOK_DEV_REPORTER_SLACK
-              valueFrom:
-                secretKeyRef:
-                  name: shared-secrets
-                  key: webhook_dev_reporter_slack
-            - name: WEBHOOK_SUPPORTTEAM_REPORTER_SLACK
-              valueFrom:
-                secretKeyRef:
-                  name: shared-secrets
-                  key: webhook_supportteam_reporter_slack
             - name: S3_BUCKET_NAME
               valueFrom:
                 secretKeyRef:

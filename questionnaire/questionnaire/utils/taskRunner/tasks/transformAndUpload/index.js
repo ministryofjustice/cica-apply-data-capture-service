@@ -91,7 +91,9 @@ function getDeclaration(questionnaire) {
         'p-rep-declaration-under-12': 'q-rep-declaration',
         'p-rep-declaration-under-12-deceased': 'q-rep-declaration',
         'p-rep-declaration-12-and-over': 'q-rep-declaration',
-        'p-rep-declaration-12-and-over-deceased': 'q-rep-declaration'
+        'p-rep-declaration-12-and-over-deceased': 'q-rep-declaration',
+        'p-rep-declaration-no-legal-authority': 'q-rep-declaration',
+        'p-rep-declaration-no-legal-authority-deceased': 'q-rep-declaration'
     };
     const declarationSectionIds = Object.keys(declarationSectionAndQuestionIds);
     const declarationSectionId = progress.find(sectionId =>
@@ -104,9 +106,19 @@ function getDeclaration(questionnaire) {
         const sectionAnswers = questionnaire.getAnswers()[declarationSectionId];
         const questionId = declarationSectionAndQuestionIds[declarationSectionId];
         const descriptionId = questionId.replace('q-', '');
-        const {description} = sectionSchema.allOf[0].properties[descriptionId];
+        let {description} = sectionSchema.allOf[0].properties[descriptionId];
         const value = sectionAnswers[questionId];
         const valueLabel = sectionSchema.allOf[1].properties[questionId].title;
+
+        if (progress.includes('p--context-paying-awards')) {
+            const payAwards = questionnaire.getSection('p--context-paying-awards').getSchema()
+                .properties['paying-awards'].description;
+            const rawDeclaration = description.replace(
+                '<div id="declaration">',
+                '<h2 class="govuk-heading-m">Declaration</h2>'
+            );
+            description = `<div id="declaration"> ${payAwards} ${rawDeclaration}`;
+        }
 
         return {
             type: 'simple',
@@ -121,6 +133,16 @@ function getDeclaration(questionnaire) {
 }
 
 /**
+ *
+ * @param {*} answers
+ * @returns
+ */
+function getOwner(ownerInfo) {
+    const {'owner-id': ownerId, 'is-authenticated': isAuthenticated} = ownerInfo;
+    return {ownerId, isAuthenticated};
+}
+
+/**
  * Transforms the questionnaire object into the necessary downstream format.
  * @param {questionnaire} questionnaire - The raw questionnaire object
  * @returns A themed object with attached metadata and declaration content.
@@ -132,14 +154,26 @@ function transformQuestionnaire(questionnaire) {
         sectionSchema.properties['p-check-your-answers'].properties.summaryInfo.summaryStructure;
     flattenAnswers(themeContent);
 
-    return {
+    const answers = questionnaire.getAnswers();
+    const transformedQuestionnaire = {
         meta: {
-            caseReference: questionnaire.getAnswers().system['case-reference'],
-            funeralReference: questionnaire.getAnswers().system['secondary-reference']
+            caseReference: answers.system['case-reference'],
+            funeralReference: answers.system['secondary-reference'],
+            answers
         },
         themes: themeContent,
         declaration: getDeclaration(questionnaire)
     };
+
+    if (answers.origin) {
+        transformedQuestionnaire.meta.channel = answers.origin.channel;
+    }
+
+    if (answers.owner) {
+        transformedQuestionnaire.meta.owner = getOwner(answers.owner);
+    }
+
+    return transformedQuestionnaire;
 }
 
 /**

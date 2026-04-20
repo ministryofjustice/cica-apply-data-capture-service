@@ -5,27 +5,40 @@
 const Ajv = require('ajv');
 const AjvErrors = require('ajv-errors');
 const VError = require('verror');
-const createQRouter = require('q-router');
-const uuidv4 = require('uuid/v4');
+const router = require('q-router');
+const crypto = require('node:crypto');
 const ajvFormatsMobileUk = require('ajv-formats-mobile-uk');
-const templates = require('./templates');
-const createSqsService = require('../services/sqs');
-const createLegacyNotifyService = require('../services/sqs/legacy-sms-message-bus');
-const createSlackService = require('../services/slack');
+const {templateService} = require('./templates/templates');
 const questionnaireResource = require('./resources/questionnaire-resource');
 const createQuestionnaireHelper = require('./questionnaire/questionnaire');
 const isQuestionnaireCompatible = require('./utils/isQuestionnaireVersionCompatible');
+const createTaskListService = require('./task-list/task-list-service');
+const getProgress = require('./utils/getProgressArray');
+const normaliseAnswers = require('./utils/normaliseAnswers');
 
 const defaults = {};
 defaults.createQuestionnaireDAL = require('./questionnaire-dal');
 
+defaults.apiVersion = '2023-05-17';
+
 function createQuestionnaireService({
     logger,
-    apiVersion,
+    apiVersion = defaults.apiVersion,
     ownerId,
     createQuestionnaireDAL = defaults.createQuestionnaireDAL
 } = {}) {
     const db = createQuestionnaireDAL({logger, ownerId});
+
+    // Check API version
+    if (apiVersion !== defaults.apiVersion) {
+        throw new VError(
+            {
+                name: 'ApiVersionNotFound'
+            },
+            `API version "${apiVersion}" is not compatible with this release`
+        );
+    }
+
     const ajv = new Ajv({
         allErrors: true,
         jsonPointers: true,
@@ -37,22 +50,34 @@ function createQuestionnaireService({
 
     ajv.addFormat('mobile-uk', ajvFormatsMobileUk);
 
+    ajv.addFormat('global-mobile', '^[\\+\\d][\\d \\(\\)\\+\\-\\#]{7,19}$');
+
     async function updateExpiryForAuthenticatedOwner(questionnaireId, owner) {
         await db.updateExpiryForAuthenticatedOwner(questionnaireId, owner);
     }
 
-    async function createQuestionnaire(templateName, ownerData) {
-        if (!(templateName in templates)) {
-            throw new VError(
-                {
-                    name: 'ResourceNotFound'
-                },
-                `Template "${templateName}" does not exist`
-            );
+    function supportsTaskList(questionnaireDefinition) {
+        if (questionnaireDefinition.routes.type === 'parallel') {
+            return true;
         }
+        return false;
+    }
 
-        const uuidV4 = uuidv4();
-        const questionnaire = templates[templateName](uuidV4);
+    async function createQuestionnaire(
+        templateName,
+        ownerData,
+        originData,
+        externalData,
+        templateVersion
+    ) {
+        const templateAsJson = await templateService.getTemplateAsJson(
+            templateName,
+            templateVersion
+        );
+        const questionnaire = {
+            id: crypto.randomUUID(),
+            ...JSON.parse(templateAsJson)
+        };
 
         if (!ownerData) {
             throw new VError(
@@ -70,39 +95,45 @@ function createQuestionnaireService({
             }
         };
 
-        await db.createQuestionnaire(uuidV4, questionnaire);
+        if (originData) {
+            questionnaire.answers.origin = {
+                channel: originData.channel
+            };
+        }
+
+        if (externalData) {
+            questionnaire.answers.system = {
+                'external-id': externalData.id
+            };
+        }
+
+        await db.createQuestionnaire(questionnaire.id, questionnaire);
 
         if (ownerData.isAuthenticated) {
-            await updateExpiryForAuthenticatedOwner(uuidV4, ownerData.id);
+            await updateExpiryForAuthenticatedOwner(questionnaire.id, ownerData.id);
         }
 
         return {
-            data: questionnaireResource({questionnaire})
+            data: questionnaireResource({questionnaire}, supportsTaskList(questionnaire))
         };
     }
 
     async function getQuestionnaire(questionnaireId) {
-        return apiVersion === '2023-05-17'
-            ? db.getQuestionnaireByOwner(questionnaireId)
-            : db.getQuestionnaire(questionnaireId);
+        return db.getQuestionnaireByOwner(questionnaireId);
     }
 
     async function getQuestionnaireSubmissionStatus(questionnaireId) {
-        return apiVersion === '2023-05-17'
-            ? db.getQuestionnaireSubmissionStatusByOwner(questionnaireId)
-            : db.getQuestionnaireSubmissionStatus(questionnaireId);
+        return db.getQuestionnaireSubmissionStatusByOwner(questionnaireId);
     }
 
     async function updateQuestionnaireSubmissionStatus(questionnaireId, submissionStatus) {
-        return apiVersion === '2023-05-17'
-            ? db.updateQuestionnaireSubmissionStatusByOwner(questionnaireId, submissionStatus)
-            : db.updateQuestionnaireSubmissionStatus(questionnaireId, submissionStatus);
+        return db.updateQuestionnaireSubmissionStatusByOwner(questionnaireId, submissionStatus);
     }
 
     function getSection(sectionId, qRouter) {
         let section;
 
-        if (sectionId === 'system' || sectionId === 'owner') {
+        if (sectionId === 'owner') {
             const currentSection = qRouter.current();
 
             section = {
@@ -134,47 +165,8 @@ function createQuestionnaireService({
 
         return null;
     }
-    async function startSubmission(questionnaireId) {
-        try {
-            await updateQuestionnaireSubmissionStatus(questionnaireId, 'IN_PROGRESS');
 
-            const sqsService = createSqsService({logger});
-            const submissionResponse = await sqsService.send(
-                {
-                    applicationId: questionnaireId
-                },
-                process.env.AWS_SQS_ID
-            );
-
-            logger.info(submissionResponse);
-            if (!submissionResponse || !submissionResponse.MessageId) {
-                await updateQuestionnaireSubmissionStatus(questionnaireId, 'FAILED');
-                const slackService = createSlackService();
-                slackService.sendMessage({
-                    appReference: `${process.env.APP_ENV || 'dev'}.reporter.webhook`,
-                    messageBodyId: 'message-bus-down',
-                    templateParameters: {
-                        timeStamp: new Date().getTime()
-                    }
-                });
-            }
-        } catch (err) {
-            logger.error({err}, 'MESSAGE SENDING FAILED');
-            await updateQuestionnaireSubmissionStatus(questionnaireId, 'FAILED');
-        }
-    }
-
-    async function getSubmissionResponseData(questionnaireId, isPostRequest = false) {
-        let submissionStatus = await getQuestionnaireSubmissionStatus(questionnaireId);
-
-        // kick things off if it is a POST request and it is not yet started.
-        if (isPostRequest === true && ['NOT_STARTED', 'FAILED'].includes(submissionStatus)) {
-            await startSubmission(questionnaireId);
-            // `startSubmission` updates the submission status within the
-            // database so we need to get it again.
-            submissionStatus = await getQuestionnaireSubmissionStatus(questionnaireId);
-        }
-
+    async function getSubmissionResponseData(questionnaireId) {
         const status = await getQuestionnaireSubmissionStatus(questionnaireId);
         const caseReferenceNumber = await retrieveCaseReferenceNumber(questionnaireId);
         const submitted = !!caseReferenceNumber;
@@ -207,7 +199,8 @@ function createQuestionnaireService({
 
     async function getAnswers(questionnaireId) {
         const questionnaire = await getQuestionnaire(questionnaireId);
-        const resourceCollection = questionnaire.progress.reduce((acc, sectionAnswersId) => {
+        const progress = getProgress(questionnaire);
+        const resourceCollection = progress.reduce((acc, sectionAnswersId) => {
             // Does this section have answers
             if (questionnaire.answers[sectionAnswersId]) {
                 acc.push(buildAnswerResource(sectionAnswersId, questionnaire));
@@ -220,8 +213,15 @@ function createQuestionnaireService({
     }
 
     async function createAnswers(questionnaireId, sectionId, answers) {
+        // we want to normalise the user's input ASAP to avoid any potential
+        // attack vectors. Doing it at this point means that the answers that
+        // are stored in the DB (`normalisedAnswers` -> `coercedAnswers`), and
+        // answers reported back to the client and browser (`rawAnswers`) are safe to be
+        // passed around without risk.
+        const normalisedAnswers = normaliseAnswers(answers);
+
         // Make a copy of the supplied answers. These will be returned if they fail validation
-        const rawAnswers = JSON.parse(JSON.stringify(answers));
+        const rawAnswers = JSON.parse(JSON.stringify(normalisedAnswers));
         let answerResource;
 
         try {
@@ -229,7 +229,7 @@ function createQuestionnaireService({
             const questionnaireDefinition = await getQuestionnaire(questionnaireId);
 
             // 2 - is the section allowed to be posted to e.g. is it in their progress
-            const qRouter = createQRouter(questionnaireDefinition);
+            const qRouter = router(questionnaireDefinition);
             const sectionDetails = getSection(sectionId, qRouter);
 
             // 3 - Section is available. Validate the answers against it
@@ -241,8 +241,8 @@ function createQuestionnaireService({
 
             const validate = ajv.compile(sectionSchema);
             // The AJV validate function coerces the answers and mutates the answers object
-            const valid = validate(answers);
-            const coercedAnswers = answers;
+            const valid = validate(normalisedAnswers);
+            const coercedAnswers = normalisedAnswers;
 
             if (!valid) {
                 const validationError = new VError({
@@ -261,8 +261,7 @@ function createQuestionnaireService({
             // 4 - If we're here all is good
             // Pass the answers to the router which will update the context (questionnaire) with these answers.
             let answeredQuestionnaire;
-
-            if (sectionDetails.id === 'system' || sectionDetails.id === 'owner') {
+            if (sectionDetails.id === 'owner') {
                 const currentSection = qRouter.current();
                 currentSection.context.answers[sectionDetails.id] = coercedAnswers;
                 answeredQuestionnaire = currentSection.context;
@@ -272,17 +271,14 @@ function createQuestionnaireService({
             }
 
             // Store the updated questionnaire object
-            if (apiVersion === '2023-05-17') {
-                await db.updateQuestionnaireByOwner(questionnaireId, answeredQuestionnaire);
-            } else {
-                await db.updateQuestionnaire(questionnaireId, answeredQuestionnaire);
-            }
+            await db.updateQuestionnaireByOwner(questionnaireId, answeredQuestionnaire);
 
             answerResource = {
                 data: {
                     type: 'answers',
                     id: sectionDetails.id,
-                    attributes: coercedAnswers
+                    attributes: coercedAnswers,
+                    pageContext: sectionSchema.options?.pageContext
                 }
             };
         } catch (err) {
@@ -292,48 +288,6 @@ function createQuestionnaireService({
         }
 
         return answerResource;
-    }
-
-    async function validateAllAnswers(questionnaireId) {
-        const questionnaire = await getQuestionnaire(questionnaireId);
-
-        // get the section names from the progress array.
-        // these are the only sections that we need to validate
-        // against because these are the only sections that pertain
-        // to the user's questionnaire. i.e. there may be other answers
-        // in the questionnaire as a result of the user backtracking
-        // and then taking another route of questions. If this is the
-        // case, then just disregard the other answers from the other
-        // route(s).
-        const sectionsToValidate = questionnaire.progress;
-        const validationErrors = [];
-        sectionsToValidate.forEach(sectionId => {
-            const sectionSchema = questionnaire.sections[sectionId];
-            const answers = questionnaire.answers[sectionId];
-            const validate = ajv.compile(sectionSchema);
-            const valid = validate(answers || {});
-            if (!valid) {
-                validationErrors.push(validate.errors);
-            }
-        });
-
-        if (validationErrors.length) {
-            logger.error({err: validationErrors}, 'SCHEMA VALIDATION FAILED');
-            const validationError = new VError({
-                name: 'JSONSchemaValidationErrors',
-                info: {
-                    submissions: await getSubmissionResponseData(questionnaireId),
-                    schemaErrors: validationErrors
-                }
-            });
-
-            throw validationError;
-        }
-
-        // mirror the ajv response for being valid.
-        return {
-            valid: true
-        };
     }
 
     function buildSectionResource(sectionId, questionnaireDefinition) {
@@ -410,13 +364,40 @@ function createQuestionnaireService({
         };
     }
 
+    function getSectionRouteBySectionId(questionnaireDefinition, sectionId) {
+        const questionnaire = createQuestionnaireHelper({questionnaireDefinition});
+        const taskListService = createTaskListService({questionnaireDefinition});
+
+        const section = questionnaire.getSection(sectionId);
+        if (taskListService.isTaskListSchema({sectionSchema: section.getSchema()})) {
+            return {};
+        }
+
+        const {states} = questionnaireDefinition.routes;
+
+        if (supportsTaskList(questionnaireDefinition)) {
+            const tasks = states;
+            const taskIds = Object.keys(tasks);
+            for (let i = 0; i < taskIds.length; i += 1) {
+                if (sectionId in tasks[taskIds[i]].states) {
+                    return tasks[taskIds[i]].states[sectionId];
+                }
+            }
+        } else if (sectionId in states) {
+            return states[sectionId];
+        }
+
+        throw new VError(`Section "${sectionId}" not found`);
+    }
+
     async function buildMetaBlock(questionnaire, sectionId) {
         // TODO: move this meta on to the appropriate section resource
-        const sectionType = questionnaire.routes.states[sectionId].type;
+        const sectionType = getSectionRouteBySectionId(questionnaire, sectionId).type;
         const isFinalType = sectionType && sectionType === 'final';
         return {
             summary: questionnaire.routes.summary,
             confirmation: questionnaire.routes.confirmation,
+            pageType: questionnaire.sections[sectionId]?.schema?.meta?.pageType,
             final: isFinalType
         };
     }
@@ -473,7 +454,8 @@ function createQuestionnaireService({
             };
         }
         // 2 - get router
-        const qRouter = createQRouter(questionnaire);
+        const qRouter = router(questionnaire);
+
         // 3 - filter or paginate progress entries if required
         // Currently this only supports queries that return a single progress entry
         if (query) {
@@ -520,24 +502,29 @@ function createQuestionnaireService({
 
             // Is the progress entry available
             if (section) {
+                const taskListService = createTaskListService();
                 if (isQuestionnaireModified) {
                     // Store the updated questionnaire object
-                    if (apiVersion === '2023-05-17') {
-                        await db.updateQuestionnaireByOwner(questionnaireId, section.context);
-                    } else {
-                        await db.updateQuestionnaire(questionnaireId, section.context);
-                    }
+                    await db.updateQuestionnaireByOwner(questionnaireId, section.context);
                 }
 
                 sectionId = section.id;
 
                 // Create the progress entry compound document
-                const previousProgressEntryLink =
-                    section.id === section.context.routes.initial
-                        ? questionnaire.routes.referrer
-                        : `${process.env.DCS_URL}/api/v1/questionnaires/${
-                              questionnaire.id
-                          }/progress-entries?filter[sectionId]=${qRouter.previous(sectionId).id}`;
+                let previousProgressEntryLink;
+                if (
+                    section.id === section.context.routes.initial ||
+                    section.id === section.context.currentSectionId // task list
+                ) {
+                    previousProgressEntryLink = questionnaire.routes.referrer;
+                    // TODO: pass in the sectionSchema, not the sectionId.
+                } else if (taskListService.isTaskListSchema({sectionId: section.id})) {
+                    previousProgressEntryLink = undefined;
+                } else {
+                    previousProgressEntryLink = `${process.env.DCS_URL}/api/questionnaires/${
+                        questionnaire.id
+                    }/progress-entries?filter[sectionId]=${qRouter.previous(sectionId).id}`;
+                }
 
                 compoundDocument.data = [buildProgressEntryResource(sectionId)];
                 // Include related resources
@@ -596,57 +583,14 @@ function createQuestionnaireService({
     }
 
     async function updateQuestionnaireModifiedDate(questionnaireId) {
-        if (apiVersion === '2023-05-17') {
-            return db.updateQuestionnaireModifiedDateByOwner(questionnaireId);
-        }
-        return db.updateQuestionnaireModifiedDate(questionnaireId);
-    }
-
-    // TODO: Move this functionality to q-router
-    async function runOnCompleteActions(questionnaireDefinition) {
-        const questionnaire = createQuestionnaireHelper({
-            questionnaireDefinition
-        });
-        const permittedActions = questionnaire.getPermittedActions();
-        const actionResults = permittedActions.map(action => {
-            if (action.type === 'sendEmail') {
-                const sqsService = createSqsService({logger});
-
-                const payload = {
-                    templateId: action.data.templateId,
-                    emailAddress: action.data.emailAddress,
-                    personalisation: {
-                        caseReference: action.data.personalisation.caseReference
-                    },
-                    reference: null
-                };
-                return sqsService.send(payload, process.env.NOTIFY_AWS_SQS_ID);
-            }
-
-            if (action.type === 'sendSms') {
-                const legacyNotifyService = createLegacyNotifyService({logger});
-
-                const payload = {
-                    templateId: action.data.templateId,
-                    phoneNumber: action.data.phoneNumber,
-                    personalisation: {
-                        caseReference: action.data.personalisation.caseReference
-                    },
-                    reference: null
-                };
-                return legacyNotifyService.sendSms(payload);
-            }
-
-            return Promise.reject(Error(`Action type "${action.type}" is not supported`));
-        });
-
-        return actionResults;
+        return db.updateQuestionnaireModifiedDateByOwner(questionnaireId);
     }
 
     async function getAnswersBySectionId(questionnaireId, sectionId) {
         const questionnaire = await getQuestionnaire(questionnaireId);
+        const progress = getProgress(questionnaire);
 
-        if (questionnaire.progress.includes(sectionId)) {
+        if (progress.includes(sectionId)) {
             return {
                 data: buildAnswerResource(sectionId, questionnaire)
             };
@@ -669,13 +613,11 @@ function createQuestionnaireService({
         getQuestionnaire,
         getQuestionnaireSubmissionStatus,
         getSubmissionResponseData,
-        validateAllAnswers,
         getAnswers,
         getProgressEntries,
         updateQuestionnaireSubmissionStatus,
         updateQuestionnaireModifiedDate,
         getSessionResource,
-        runOnCompleteActions,
         getAnswersBySectionId,
         updateExpiryForAuthenticatedOwner,
         getQuestionnaireIdsBySubmissionStatus

@@ -11,6 +11,7 @@ const incompleteQuestionnaireWithoutCRN = require('./test-fixtures/res/questionn
 beforeEach(() => {
     jest.resetModules();
     jest.unmock('./questionnaire-service.js');
+    jest.unmock('./submissions/submissions-service.js');
 });
 
 describe('Openapi version 2023-05-17 validation', () => {
@@ -127,13 +128,22 @@ describe('Openapi version 2023-05-17 validation', () => {
             }),
             getSessionResource: jest.fn(() => {
                 return 'ok';
-            }),
-            validateAllAnswers: jest.fn(() => {
-                return 'ok';
             })
         };
 
         return () => questionnaireServiceMock;
+    });
+    jest.doMock('./submissions/submissions-service.js', () => {
+        const submissionsServiceMock = {
+            submit: jest.fn(questionnaireId => {
+                if (questionnaireId === '985cb104-0c15-4a9c-9840-cb1007f098fb') {
+                    const err = Error(`Submission error for questionnaireId ${questionnaireId}`);
+                    err.name = 'SubmissionError';
+                    throw err;
+                }
+            })
+        };
+        return () => submissionsServiceMock;
     });
 
     const mockQuestionnaireService = require('./questionnaire-service.js')();
@@ -155,7 +165,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                     data: {
                         type: 'questionnaires',
                         attributes: {
-                            templateName: 'sexual-assault',
+                            templateName: 'apply-for-compensation',
                             owner: {
                                 id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                 isAuthenticated: true
@@ -181,7 +191,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                     data: {
                         type: 'questionnaires',
                         attributes: {
-                            templateName: 'sexual-assault',
+                            templateName: 'apply-for-compensation',
                             owner: {
                                 id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                 isAuthenticated: true
@@ -230,14 +240,14 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault'
+                                templateName: 'apply-for-compensation'
                             }
                         }
                     });
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'owner'"
+                    "must have required property 'owner'"
                 );
             });
 
@@ -251,7 +261,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -273,7 +283,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -284,7 +294,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'dcs-api-version'"
+                    "must have required property 'dcs-api-version'"
                 );
             });
 
@@ -298,7 +308,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -309,7 +319,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    'should be equal to one of the allowed values: 2023-05-17'
+                    'must be equal to one of the allowed values: 2023-05-17'
                 );
             });
 
@@ -323,7 +333,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                         data: {
                             type: 'questionnaires',
                             attributes: {
-                                templateName: 'sexual-assault',
+                                templateName: 'apply-for-compensation',
                                 owner: {
                                     id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
                                     isAuthenticated: true
@@ -332,6 +342,60 @@ describe('Openapi version 2023-05-17 validation', () => {
                         }
                     });
                 expect(response.statusCode).toEqual(201);
+            });
+        });
+
+        describe('Requests with an origin MUST include channel data', () => {
+            it('should return status code 400 if channel data is NOT included in the origin data', async () => {
+                const response = await request(app)
+                    .post('/api/questionnaires')
+                    .set('Authorization', `Bearer ${token}`)
+                    .set('Content-Type', 'application/vnd.api+json')
+                    .set('Dcs-Api-Version', '2023-05-17')
+                    .send({
+                        data: {
+                            type: 'questionnaires',
+                            attributes: {
+                                templateName: 'apply-for-compensation',
+                                owner: {
+                                    id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
+                                    isAuthenticated: true
+                                },
+                                origin: {}
+                            }
+                        }
+                    });
+                expect(response.body).toHaveProperty('errors');
+                expect(response.body.errors[0].status).toEqual(400);
+                expect(response.body.errors[0].detail).toEqual(
+                    "must have required property 'channel'"
+                );
+            });
+        });
+
+        describe('Requests with external data MUST include an id', () => {
+            it('should return status code 400 if id is NOT included in the external data', async () => {
+                const response = await request(app)
+                    .post('/api/questionnaires')
+                    .set('Authorization', `Bearer ${token}`)
+                    .set('Content-Type', 'application/vnd.api+json')
+                    .set('Dcs-Api-Version', '2023-05-17')
+                    .send({
+                        data: {
+                            type: 'questionnaires',
+                            attributes: {
+                                templateName: 'apply-for-compensation',
+                                owner: {
+                                    id: 'urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
+                                    isAuthenticated: true
+                                },
+                                external: {}
+                            }
+                        }
+                    });
+                expect(response.body).toHaveProperty('errors');
+                expect(response.body.errors[0].status).toEqual(400);
+                expect(response.body.errors[0].detail).toEqual("must have required property 'id'");
             });
         });
     });
@@ -392,7 +456,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'on-behalf-of'"
+                    "must have required property 'on-behalf-of'"
                 );
             });
 
@@ -421,7 +485,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'dcs-api-version'"
+                    "must have required property 'dcs-api-version'"
                 );
             });
 
@@ -437,7 +501,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    'should be equal to one of the allowed values: 2023-05-17'
+                    'must be equal to one of the allowed values: 2023-05-17'
                 );
             });
 
@@ -547,7 +611,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'on-behalf-of'"
+                    "must have required property 'on-behalf-of'"
                 );
             });
 
@@ -592,7 +656,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'dcs-api-version'"
+                    "must have required property 'dcs-api-version'"
                 );
             });
 
@@ -614,35 +678,6 @@ describe('Openapi version 2023-05-17 validation', () => {
                         }
                     });
                 expect(response.statusCode).toEqual(201);
-            });
-        });
-
-        describe('POST answers to the "system" section', () => {
-            it('should perform actions specific to the "system" section', async () => {
-                const response = await request(app)
-                    .post(
-                        '/api/questionnaires/285cb104-0c15-4a9c-9840-cb1007f098fb/sections/system/answers'
-                    )
-                    .set('Authorization', `Bearer ${token}`)
-                    .set('Content-Type', 'application/vnd.api+json')
-                    .set('On-Behalf-Of', `urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6`)
-                    .set('Dcs-Api-Version', '2023-05-17')
-                    .send({
-                        data: {
-                            type: 'answers',
-                            attributes: {
-                                system: {
-                                    'case-reference': '23/700000'
-                                }
-                            }
-                        }
-                    });
-                expect(response.statusCode).toEqual(201);
-                expect(
-                    mockQuestionnaireService.updateQuestionnaireSubmissionStatus
-                ).toBeCalledTimes(1);
-                expect(mockQuestionnaireService.getQuestionnaire).toBeCalledTimes(1);
-                expect(mockQuestionnaireService.runOnCompleteActions).toBeCalledTimes(1);
             });
         });
 
@@ -736,7 +771,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'on-behalf-of'"
+                    "must have required property 'on-behalf-of'"
                 );
             });
 
@@ -765,7 +800,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'dcs-api-version'"
+                    "must have required property 'dcs-api-version'"
                 );
             });
 
@@ -834,7 +869,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'on-behalf-of'"
+                    "must have required property 'on-behalf-of'"
                 );
             });
 
@@ -863,7 +898,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'dcs-api-version'"
+                    "must have required property 'dcs-api-version'"
                 );
             });
 
@@ -934,7 +969,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'on-behalf-of'"
+                    "must have required property 'on-behalf-of'"
                 );
             });
 
@@ -959,7 +994,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'dcs-api-version'"
+                    "must have required property 'dcs-api-version'"
                 );
             });
 
@@ -1104,7 +1139,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'on-behalf-of'"
+                    "must have required property 'on-behalf-of'"
                 );
             });
 
@@ -1145,7 +1180,7 @@ describe('Openapi version 2023-05-17 validation', () => {
                 expect(response.body).toHaveProperty('errors');
                 expect(response.body.errors[0].status).toEqual(400);
                 expect(response.body.errors[0].detail).toEqual(
-                    "should have required property 'dcs-api-version'"
+                    "must have required property 'dcs-api-version'"
                 );
             });
 
@@ -1166,6 +1201,29 @@ describe('Openapi version 2023-05-17 validation', () => {
                     });
                 expect(response.statusCode).toEqual(201);
             });
+        });
+    });
+
+    describe('Submission Failure: POST /questionnaires/:questionnaireId/submissions', () => {
+        it('should throw a SubmissionError when a sequential task fails', async () => {
+            const response = await request(app)
+                .post('/api/questionnaires/985cb104-0c15-4a9c-9840-cb1007f098fb/submissions')
+                .set('Authorization', `Bearer ${token}`)
+                .set('Content-Type', 'application/vnd.api+json')
+                .set('On-Behalf-Of', `urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6`)
+                .set('Dcs-Api-Version', '2023-05-17')
+                .send({
+                    data: {
+                        type: 'submissions',
+                        attributes: {
+                            questionnaireId: '985cb104-0c15-4a9c-9840-cb1007f098fb'
+                        }
+                    }
+                });
+            expect(response.error.status).toEqual(500);
+            expect(response.error.text).toContain(
+                'SubmissionError: Submission error for questionnaireId 985cb104-0c15-4a9c-9840-cb1007f098fb'
+            );
         });
     });
 });
