@@ -290,7 +290,7 @@ function questionnaireDAL(spec) {
         let result;
         try {
             result = await db.query(
-                `SELECT id, questionnaire -> 'meta' AS "meta", questionnaire -> 'answers' -> 'system' ->> 'case-reference' AS "caseReference" FROM questionnaire WHERE questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $1`,
+                `SELECT id, questionnaire -> 'meta' AS "meta", questionnaire -> 'answers' -> 'system' ->> 'case-reference' AS "caseReference", questionnaire -> 'answers' -> 'owner' AS "owner" FROM questionnaire WHERE questionnaire -> 'answers' -> 'owner' ->> 'owner-id' = $1`,
                 [ownerId]
             );
         } catch (err) {
