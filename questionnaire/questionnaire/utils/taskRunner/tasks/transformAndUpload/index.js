@@ -156,8 +156,7 @@ function transformQuestionnaire(questionnaire) {
 
     const answers = questionnaire.getAnswers();
     const questionnaireType = questionnaire.getType();
-    const questionnaireMetadata = questionnaire.getMetadata();
-    const barcodeString = questionnaireMetadata.personalisation?.['barcode-string'];
+    const barcodeString = answers.system.barcode;
     const transformedQuestionnaire = {
         meta: {
             caseReference: answers.system['case-reference'],
