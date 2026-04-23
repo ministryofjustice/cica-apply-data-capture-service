@@ -459,7 +459,13 @@ function createQuestionnaireService({
         // 2 - get router
         const qRouter = router(questionnaire);
 
-        // 3 - filter or paginate progress entries if required
+        // 3 - if it's a letter, mark it as read
+        if (questionnaire.type !== 'apply-for-compensation') {
+            questionnaire.meta.read = true;
+            await db.updateQuestionnaire(questionnaireId, questionnaire);
+        }
+
+        // 4 - filter or paginate progress entries if required
         // Currently this only supports queries that return a single progress entry
         if (query) {
             const {filter, page} = query;
@@ -614,6 +620,7 @@ function createQuestionnaireService({
         const questionnaire = await getQuestionnaire(questionnaireId);
         const personalisationData = questionnaire.meta.personalisation;
         const {summaryBlocks} = questionnaire.meta;
+        const {read} = questionnaire.meta;
         const caseReferenceNumber = await retrieveCaseReferenceNumber(questionnaireId);
         const response = {
             data: {
@@ -622,7 +629,8 @@ function createQuestionnaireService({
                 attributes: {
                     personalisation: {...personalisationData},
                     summaryBlocks: {...summaryBlocks},
-                    caseReferenceNumber
+                    caseReferenceNumber,
+                    read
                 }
             }
         };
@@ -634,6 +642,7 @@ function createQuestionnaireService({
         const metadata = results.map(data => {
             const personalisationData = data.meta.personalisation;
             const {summaryBlocks} = data.meta;
+            const {read} = data.meta;
             const caseReferenceNumber = data.caseReference;
             return {
                 type: 'templateMetadata',
@@ -641,7 +650,8 @@ function createQuestionnaireService({
                 attributes: {
                     personalisation: {...personalisationData},
                     summaryBlocks: {...summaryBlocks},
-                    caseReferenceNumber
+                    caseReferenceNumber,
+                    read
                 }
             };
         });
