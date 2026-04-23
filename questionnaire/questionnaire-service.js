@@ -618,7 +618,10 @@ function createQuestionnaireService({
 
     async function getTemplateMetadataById(questionnaireId) {
         const questionnaire = await getQuestionnaire(questionnaireId);
-        const personalisationData = questionnaire.meta.personalisation;
+        const personalisationData = {
+            'first-name': questionnaire.answers?.owner?.['first-name'],
+            'last-name': questionnaire.answers?.owner?.['last-name']
+        };
         const {summaryBlocks} = questionnaire.meta;
         const {read} = questionnaire.meta;
         const caseReferenceNumber = await retrieveCaseReferenceNumber(questionnaireId);
