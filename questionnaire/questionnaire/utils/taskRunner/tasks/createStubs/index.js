@@ -49,7 +49,7 @@ async function createStubs({questionnaire, logger, type}) {
                     const referrerLink =
                         // TODO: make the below work on different environments
                         process.env.NODE_ENV === 'production'
-                            ? 'https://uat.claim-criminal-injuries-compensation.service.justice.gov.uk'
+                            ? 'https://dev.claim-criminal-injuries-compensation.service.justice.gov.uk'
                             : 'https://localhost:3000';
                     // prettier-ignore
                     stub.routes.referrer = `${referrerLink}/account/dashboard/manage/${stub.answers.system['case-reference'].replace('\\', '-')}`;
