@@ -363,6 +363,7 @@ function createQuestionnaire({
 
         if (actions) {
             const answersAndRolesAndMeta = {
+                id: getId(),
                 answers: getAnswers(),
                 attributes: {
                     q__roles: getRoles()
