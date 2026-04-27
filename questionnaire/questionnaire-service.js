@@ -618,7 +618,10 @@ function createQuestionnaireService({
 
     async function getTemplateMetadataById(questionnaireId) {
         const questionnaire = await getQuestionnaire(questionnaireId);
-        const personalisationData = questionnaire.meta.personalisation;
+        const personalisationData = {
+            'first-name': questionnaire.answers?.owner?.['first-name'],
+            'last-name': questionnaire.answers?.owner?.['last-name']
+        };
         const {summaryBlocks} = questionnaire.meta;
         const {read} = questionnaire.meta;
         const caseReferenceNumber = await retrieveCaseReferenceNumber(questionnaireId);
@@ -640,7 +643,10 @@ function createQuestionnaireService({
     async function getTemplateMetadata() {
         const results = await db.getTemplateMetadataByOwner();
         const metadata = results.map(data => {
-            const personalisationData = data.meta.personalisation;
+            const personalisationData = {
+                'first-name': data.owner?.['first-name'],
+                'last-name': data.owner?.['last-name']
+            };
             const {summaryBlocks} = data.meta;
             const {read} = data.meta;
             const caseReferenceNumber = data.caseReference;
