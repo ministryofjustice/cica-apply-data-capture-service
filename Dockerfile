@@ -1,5 +1,8 @@
 # lets start from an image that already has nodejs installed
-FROM node:24.13.0-trixie-slim AS base
+FROM node:24.15.0-trixie-slim AS base
+
+USER root
+RUN npm install -g npm@11.13.0
 
 RUN groupadd -g 1014 dc_user \
     && useradd -rm -d /usr/src/app -u 1015 -g dc_user dc_user
@@ -46,7 +49,7 @@ CMD [ "npm", "start" ]
 # Change this when changing the production image
 # keep both in sync, production -slim variant
 # dev the non-slim variant
-FROM node:24.13.0-trixie AS dev
+FROM node:24.15.0-trixie AS dev
 
 RUN groupadd -g 1014 dc_user \
     && useradd -rm -d /usr/src/app -u 1015 -g dc_user dc_user
