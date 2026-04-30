@@ -212,4 +212,31 @@ router
         }
     });
 
+router
+    .route('/:questionnaireId/letter')
+    .get(permissions('read:letters'), async (req, res, next) => {
+        try {
+            const questionnaireService = createQuestionnaireService({
+                logger: req.log,
+                apiVersion: req.get('Dcs-Api-Version'),
+                ownerId: req.get('On-Behalf-Of')
+            });
+            const response = await questionnaireService.getLetter({
+                questionnaireId: req.params.questionnaireId
+            });
+            res.status(200);
+            res.type('application/pdf');
+            res.setHeader(
+                'Content-Disposition',
+                `attachment; filename="decision-letter-${req.params.questionnaireId}.pdf"`
+            );
+            res.setHeader('Cache-Control', 'private, no-store');
+
+            response.stream.on('error', next);
+            response.stream.pipe(res);
+        } catch (err) {
+            next(err);
+        }
+    });
+
 module.exports = router;
