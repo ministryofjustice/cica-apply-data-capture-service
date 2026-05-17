@@ -27,7 +27,7 @@
         "ajv-formats-mobile-uk": "github:CriminalInjuriesCompensationAuthority/ajv-formats-mobile-uk#v1.0.0",
         "cookie-parser": "~1.4.3",
         "debug": "~2.6.9",
-        "express": "^4.18.2",
+        "express": "^4.22.2",
         "express-jwt": "^8.0.0",
         "express-jwt-authz": "^2.4.1",
         "express-openapi-validator": "^5.5.3",
