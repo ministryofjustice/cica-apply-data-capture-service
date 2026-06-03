@@ -10,7 +10,10 @@ const createSqsService = require('../../../../../../services/sqs');
 function buildMessageBody(questionnaireId, questionnaire) {
     const [year, refNo] = questionnaire.answers.system['case-reference'].split('\\');
     const s3Directory = `${year}-${refNo}`;
-    return {applicationJSONDocumentSummaryKey: `${s3Directory}/${questionnaireId}.json`};
+    return {
+        applicationJSONDocumentSummaryKey: `${s3Directory}/${questionnaireId}.json`,
+        questionnaireId
+    };
 }
 
 /**
@@ -20,10 +23,11 @@ function buildMessageBody(questionnaireId, questionnaire) {
  */
 async function sendSubmissionMessageToSQS({questionnaire, logger}) {
     const questionnaireId = questionnaire.id;
+    const taskLogger = logger.child({questionnaireId});
 
     const body = buildMessageBody(questionnaireId, questionnaire);
-    logger.info(`Sending submission message to SQS for questionnaire with id ${questionnaireId}`);
-    const sqsService = createSqsService({logger});
+    taskLogger.info('Sending submission message to SQS for questionnaire with id');
+    const sqsService = createSqsService({logger: taskLogger});
 
     return sqsService.send(body, process.env.AWS_SQS_ID);
 }

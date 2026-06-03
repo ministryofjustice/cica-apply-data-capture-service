@@ -7,11 +7,17 @@ const createQuestionnaireService = require('./questionnaire-service');
 const permissions = require('../middleware/route-permissions');
 const metadataRouter = require('./metadata/metadata-routes.js');
 const submissionsRouter = require('./submissions/submissions-routes.js');
+const {questionnaireIdMiddleware, baseContextMiddleware} = require('../middleware/request-context');
 
 const router = express.Router();
 const rxTemplateName = /^[a-zA-Z0-9-]{1,30}$/;
+
 // Ensure JWT is valid
 router.use(validateJWT({secret: process.env.DCS_JWT_SECRET, algorithms: ['HS256']}));
+
+// enrich request/log context once for all questionnaire routes.
+router.use(baseContextMiddleware);
+router.use('/:questionnaireId', questionnaireIdMiddleware);
 
 router.route('/').post(permissions('create:questionnaires'), async (req, res, next) => {
     try {

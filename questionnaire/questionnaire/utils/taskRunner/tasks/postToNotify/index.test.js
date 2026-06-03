@@ -6,11 +6,6 @@ const questionnaireWithSMS = require('../test-fixtures/questionnaireCompleteWith
 const mockSqsService = require('../../../../../../services/sqs');
 const sendNotifyMessageToSQS = require('.');
 
-const mockLogger = {
-    info: jest.fn(),
-    error: jest.fn()
-};
-
 const mockSendSqsResponse = require('../../../../../test-fixtures/res/post_submissionQueue.json');
 
 jest.mock('../../../../../../services/sqs');
@@ -24,6 +19,14 @@ describe('Post to Notify task', () => {
         sendMock = mockSqsService.mockImplementation(() => ({
             send: () => mockSendSqsResponse
         }));
+        const mockLogger = {
+            info: jest.fn(),
+            error: jest.fn(),
+            child: jest.fn().mockReturnValue({
+                info: jest.fn(),
+                error: jest.fn()
+            })
+        };
         const data = {
             questionnaire: questionnaireWithEmail,
             logger: mockLogger
@@ -40,6 +43,14 @@ describe('Post to Notify task', () => {
         sendMock = mockSqsService.mockImplementation(() => ({
             send: () => mockSendSqsResponse
         }));
+        const mockLogger = {
+            info: jest.fn(),
+            error: jest.fn(),
+            child: jest.fn().mockReturnValue({
+                info: jest.fn(),
+                error: jest.fn()
+            })
+        };
         const data = {
             questionnaire: questionnaireWithSMS,
             logger: mockLogger
@@ -58,6 +69,14 @@ describe('Post to Notify task', () => {
                 throw new Error('Failed to send message to Notify SQS');
             }
         }));
+        const mockLogger = {
+            info: jest.fn(),
+            error: jest.fn(),
+            child: jest.fn().mockReturnValue({
+                info: jest.fn(),
+                error: jest.fn()
+            })
+        };
         const data = {
             questionnaire: questionnaireWithSMS,
             logger: mockLogger
@@ -66,6 +85,6 @@ describe('Post to Notify task', () => {
         const expectedError = new VError(`Failed to send message to Notify SQS`);
         await expect(sendNotifyMessageToSQS(data)).rejects.toThrow(expectedError);
         expect(sendMock).toHaveBeenCalledTimes(1);
-        expect(mockLogger.info).toHaveBeenCalledTimes(1);
+        expect(mockLogger.child().info).toHaveBeenCalledTimes(1);
     });
 });

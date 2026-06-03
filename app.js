@@ -11,6 +11,7 @@ const docsRouter = require('./docs/routes');
 const questionnaireRouter = require('./questionnaire/routes');
 
 const app = express();
+
 const logger = pino({
     level: process.env.DCS_LOG_LEVEL,
     redact: {

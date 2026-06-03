@@ -5,11 +5,6 @@ const {buildMessageBody, sendSubmissionMessageToSQS} = require('.');
 const questionnaireFixture = require('../test-fixtures/questionnaireCompleteForCheckYourAnswers');
 const mockSqsService = require('../../../../../../services/sqs');
 
-const mockLogger = {
-    info: jest.fn(),
-    error: jest.fn()
-};
-
 const mockSendSqsResponse = require('../../../../../test-fixtures/res/post_submissionQueue.json');
 
 jest.mock('../../../../../../services/sqs');
@@ -24,11 +19,20 @@ describe('Post To SQS Task', () => {
     it('Should create the correct message body.', () => {
         const messageBody = buildMessageBody(questionnaireFixture.id, questionnaireFixture);
         expect(messageBody).toEqual({
-            applicationJSONDocumentSummaryKey: `19-751194/${questionnaireFixture.id}.json`
+            applicationJSONDocumentSummaryKey: `19-751194/${questionnaireFixture.id}.json`,
+            questionnaireId: questionnaireFixture.id
         });
     });
 
     it('Should send message to SQS', async () => {
+        const mockLogger = {
+            info: jest.fn(),
+            error: jest.fn(),
+            child: jest.fn().mockReturnValue({
+                info: jest.fn(),
+                error: jest.fn()
+            })
+        };
         mockSqsService.mockImplementation(() => ({
             send: () => mockSendSqsResponse
         }));
@@ -45,6 +49,14 @@ describe('Post To SQS Task', () => {
     });
 
     it('Should error if message fails to send', async () => {
+        const mockLogger = {
+            info: jest.fn(),
+            error: jest.fn(),
+            child: jest.fn().mockReturnValue({
+                info: jest.fn(),
+                error: jest.fn()
+            })
+        };
         sendMock = mockSqsService.mockImplementation(() => ({
             send: () => {
                 throw new Error('Failed to send message to SQS');
