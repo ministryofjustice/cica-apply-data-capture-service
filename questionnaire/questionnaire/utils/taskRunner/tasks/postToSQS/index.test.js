@@ -24,7 +24,8 @@ describe('Post To SQS Task', () => {
     it('Should create the correct message body.', () => {
         const messageBody = buildMessageBody(questionnaireFixture.id, questionnaireFixture);
         expect(messageBody).toEqual({
-            applicationJSONDocumentSummaryKey: `19-751194/${questionnaireFixture.id}.json`
+            applicationJSONDocumentSummaryKey: `19-751194/${questionnaireFixture.id}.json`,
+            questionnaireId: questionnaireFixture.id
         });
     });
 

@@ -10,7 +10,10 @@ const createSqsService = require('../../../../../../services/sqs');
 function buildMessageBody(questionnaireId, questionnaire) {
     const [year, refNo] = questionnaire.answers.system['case-reference'].split('\\');
     const s3Directory = `${year}-${refNo}`;
-    return {applicationJSONDocumentSummaryKey: `${s3Directory}/${questionnaireId}.json`};
+    return {
+        applicationJSONDocumentSummaryKey: `${s3Directory}/${questionnaireId}.json`,
+        questionnaireId
+    };
 }
 
 /**

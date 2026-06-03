@@ -22,7 +22,8 @@ async function sendNotifyMessageToSQS({questionnaire, logger}) {
                             caseReference: action.data.personalisation?.caseReference,
                             content: action.data.personalisation?.content
                         },
-                        reference: null
+                        reference: null,
+                        questionnaireId
                     };
                     sqsResponse = await sqsService.send(payload, process.env.NOTIFY_AWS_SQS_ID);
                     logger.info(
@@ -38,7 +39,8 @@ async function sendNotifyMessageToSQS({questionnaire, logger}) {
                             caseReference: action.data.personalisation?.caseReference,
                             content: action.data.personalisation?.content
                         },
-                        reference: null
+                        reference: null,
+                        questionnaireId
                     };
                     sqsResponse = await sqsService.send(payload, process.env.NOTIFY_AWS_SQS_ID);
                     logger.info(
