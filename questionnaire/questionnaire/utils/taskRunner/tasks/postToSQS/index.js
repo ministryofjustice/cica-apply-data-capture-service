@@ -23,10 +23,11 @@ function buildMessageBody(questionnaireId, questionnaire) {
  */
 async function sendSubmissionMessageToSQS({questionnaire, logger}) {
     const questionnaireId = questionnaire.id;
+    const taskLogger = logger.child({questionnaireId});
 
     const body = buildMessageBody(questionnaireId, questionnaire);
-    logger.info(`Sending submission message to SQS for questionnaire with id ${questionnaireId}`);
-    const sqsService = createSqsService({logger});
+    taskLogger.info('Sending submission message to SQS for questionnaire with id');
+    const sqsService = createSqsService({logger: taskLogger});
 
     return sqsService.send(body, process.env.AWS_SQS_ID);
 }

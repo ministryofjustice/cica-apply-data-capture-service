@@ -14,10 +14,6 @@ const mockS3 = require('../../../../../../services/s3');
 jest.mock('../../../../../questionnaire-dal');
 jest.mock('../../../../../../services/s3');
 
-const loggerMock = {
-    info: jest.fn()
-};
-
 describe('Transform and Upload task', () => {
     // Arrange
     const questionnaireObj = questionnaire({questionnaireDefinition: questionnaireFixture});
@@ -125,9 +121,18 @@ describe('Transform and Upload task', () => {
             uploadFile: () => 'Success'
         }));
 
+        const mockLogger = {
+            info: jest.fn(),
+            error: jest.fn(),
+            child: jest.fn().mockReturnValue({
+                info: jest.fn(),
+                error: jest.fn()
+            })
+        };
+
         result = await transformAndUpload({
             questionnaireDef: questionnaireFixture,
-            logger: loggerMock
+            logger: mockLogger
         });
 
         expect(result).toEqual('Success');
@@ -145,10 +150,19 @@ describe('Transform and Upload task', () => {
             }
         }));
 
+        const mockLogger = {
+            info: jest.fn(),
+            error: jest.fn(),
+            child: jest.fn().mockReturnValue({
+                info: jest.fn(),
+                error: jest.fn()
+            })
+        };
+
         await expect(async () => {
             await transformAndUpload({
                 questionnaireDef: questionnaireFixture,
-                logger: loggerMock
+                logger: mockLogger
             });
         }).rejects.toThrow(error);
     });
@@ -161,10 +175,19 @@ describe('Transform and Upload task', () => {
             }
         }));
 
+        const mockLogger = {
+            info: jest.fn(),
+            error: jest.fn(),
+            child: jest.fn().mockReturnValue({
+                info: jest.fn(),
+                error: jest.fn()
+            })
+        };
+
         await expect(async () => {
             await transformAndUpload({
                 questionnaireDef: questionnaireFixture,
-                logger: loggerMock
+                logger: mockLogger
             });
         }).rejects.toThrow(error);
     });

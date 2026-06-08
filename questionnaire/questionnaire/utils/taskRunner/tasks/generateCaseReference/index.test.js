@@ -19,7 +19,10 @@ const dbMock = {
     updateQuestionnaire: jest.fn(() => 'Successfully updated')
 };
 const loggerMock = {
-    info: jest.fn()
+    info: jest.fn(),
+    child: jest.fn().mockReturnValue({
+        info: jest.fn()
+    })
 };
 
 describe('Generate Case reference', () => {

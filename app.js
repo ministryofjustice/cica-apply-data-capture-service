@@ -12,12 +12,6 @@ const questionnaireRouter = require('./questionnaire/routes');
 
 const app = express();
 
-// Extracts the questionnaireId UUID from a DCS API URL path.
-function extractQuestionnaireIdFromUrl(url) {
-    const match = url && url.match(/\/questionnaires\/([^/?]+)/);
-    return match ? match[1] : undefined;
-}
-
 const logger = pino({
     level: process.env.DCS_LOG_LEVEL,
     redact: {
@@ -48,11 +42,7 @@ const logger = pino({
         }
 
         return 'info';
-    },
-    customProps: req => ({
-        questionnaireId: extractQuestionnaireIdFromUrl(req.url),
-        ownerId: req.headers['on-behalf-of']
-    })
+    }
 });
 
 app.use(

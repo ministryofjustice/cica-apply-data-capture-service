@@ -5,8 +5,10 @@ const createQuestionnaireHelper = require('../../../../questionnaire');
 
 async function sendNotifyMessageToSQS({questionnaire, logger}) {
     const questionnaireId = questionnaire.id;
-    logger.info(`Sending notify message to SQS for questionnaire with id ${questionnaireId}`);
-    const sqsService = createSqsService({logger});
+    const taskLogger = logger.child({questionnaireId});
+
+    taskLogger.info('Sending notify message to SQS for questionnaire with id');
+    const sqsService = createSqsService({logger: taskLogger});
     const questionnaireDef = createQuestionnaireHelper({questionnaireDefinition: questionnaire});
     const permittedActions = questionnaireDef.getPermittedActions();
     let sqsResponse = {MessageId: 'MessageId'};
@@ -26,9 +28,7 @@ async function sendNotifyMessageToSQS({questionnaire, logger}) {
                         questionnaireId
                     };
                     sqsResponse = await sqsService.send(payload, process.env.NOTIFY_AWS_SQS_ID);
-                    logger.info(
-                        `Email sent to Notify SQS for questionnaire with id ${questionnaireId}`
-                    );
+                    taskLogger.info('Email sent to Notify SQS for questionnaire with id');
                 }
 
                 if (action.type === 'sendSms') {
@@ -43,9 +43,7 @@ async function sendNotifyMessageToSQS({questionnaire, logger}) {
                         questionnaireId
                     };
                     sqsResponse = await sqsService.send(payload, process.env.NOTIFY_AWS_SQS_ID);
-                    logger.info(
-                        `SMS sent to Notify SQS for questionnaire with id ${questionnaireId}`
-                    );
+                    taskLogger.info('SMS sent to Notify SQS for questionnaire with id');
                 }
             }
         })

@@ -73,6 +73,9 @@ async function setCaseReference(questionnaire, logger, db, section) {
  */
 async function generateReferenceNumber({questionnaire, logger}) {
     const db = createQuestionnaireDAL({logger});
+    const questionnaireId = questionnaire.id;
+    const taskLogger = logger.child({questionnaireId});
+    taskLogger.info('Starting case reference generation task for questionnaire with id');
     // Update application object with reference
     let updatedQuestionnaire = await setCaseReference(questionnaire, logger, db, 'case-reference');
 
@@ -86,7 +89,7 @@ async function generateReferenceNumber({questionnaire, logger}) {
         );
     }
 
-    logger.info(`Updating questionnaire with id ${questionnaire.id}`);
+    taskLogger.info('Updating questionnaire with id');
     const result = db.updateQuestionnaire(updatedQuestionnaire.id, updatedQuestionnaire);
 
     // return something
