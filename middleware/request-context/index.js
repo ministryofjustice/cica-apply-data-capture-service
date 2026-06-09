@@ -4,8 +4,8 @@ const crypto = require('crypto');
 
 function resolveQuestionnaireId(req) {
     return (
-        req.context?.questionnaireId ||
         req.params?.questionnaireId ||
+        req.context?.questionnaireId ||
         req.body?.data?.attributes?.questionnaireId ||
         undefined
     );
@@ -13,8 +13,11 @@ function resolveQuestionnaireId(req) {
 
 function enrichRequestContext(req, res, next) {
     const questionnaireId = resolveQuestionnaireId(req);
-    const ownerId = req.get('On-Behalf-Of');
-    const requestId = req.get('X-Request-Id') || crypto.randomUUID();
+    console.log('#######################################################');
+    console.log({questionnaireId});
+    console.log('#######################################################');
+    const ownerId = req.context?.ownerId || req.get('On-Behalf-Of');
+    const requestId = req.context?.requestId || req.get('X-Request-Id') || crypto.randomUUID();
 
     req.context = {
         ...req.context,

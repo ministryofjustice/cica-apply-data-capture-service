@@ -43,24 +43,28 @@ function updateCaseReferenceWithYear(caseReference, dateSubmitted) {
  * @returns result of update
  */
 async function setCaseReference(questionnaire, logger, db, section) {
+    const questionnaireId = questionnaire.id;
+    const sectionLogger = logger.child({questionnaireId, section});
     const systemSection = questionnaire.answers.system;
     let caseReference;
 
     if (systemSection[section]) {
-        logger.info(
-            `Questionnaire with id ${questionnaire.id} already has ${section}. ${section} not updated`
+        sectionLogger.info(
+            `Questionnaire with id ${questionnaireId} already has ${section}. ${section} not updated`
         );
         return questionnaire;
     }
 
-    logger.info(`Generating case reference number for questionnaire with id ${questionnaire.id}`);
-    caseReference = await db.getReferenceNumber(getIsFatal(questionnaire), questionnaire.id);
+    sectionLogger.info(
+        `Generating case reference number for questionnaire with id ${questionnaireId}`
+    );
+    caseReference = await db.getReferenceNumber(getIsFatal(questionnaire), questionnaireId);
 
-    const dateSubmitted = await db.getQuestionnaireModifiedDate(questionnaire.id);
-    logger.info(`Adding year to ${section} for questionnaire with id ${questionnaire.id}`);
+    const dateSubmitted = await db.getQuestionnaireModifiedDate(questionnaireId);
+    sectionLogger.info(`Adding year to ${section} for questionnaire with id ${questionnaireId}`);
     caseReference = updateCaseReferenceWithYear(caseReference, dateSubmitted);
 
-    logger.info(`Updating questionnaire with id ${questionnaire.id} with ${section}`);
+    sectionLogger.info(`Updating questionnaire with id ${questionnaireId} with ${section}`);
     questionnaire.answers.system[section] = caseReference;
     return questionnaire;
 }
@@ -72,18 +76,24 @@ async function setCaseReference(questionnaire, logger, db, section) {
  * @returns result from update to the database.
  */
 async function generateReferenceNumber({questionnaire, logger}) {
-    const db = createQuestionnaireDAL({logger});
     const questionnaireId = questionnaire.id;
-    const taskLogger = logger.child({questionnaireId});
+    const taskLogger = logger.child({task: 'generateCaseReference', questionnaireId});
+    const db = createQuestionnaireDAL({logger: taskLogger});
     taskLogger.info('Starting case reference generation task for questionnaire with id');
+
     // Update application object with reference
-    let updatedQuestionnaire = await setCaseReference(questionnaire, logger, db, 'case-reference');
+    let updatedQuestionnaire = await setCaseReference(
+        questionnaire,
+        taskLogger,
+        db,
+        'case-reference'
+    );
 
     // If split application then we need to generate a secondary reference number too
     if (getIsSplit(questionnaire)) {
         updatedQuestionnaire = await setCaseReference(
             updatedQuestionnaire,
-            logger,
+            taskLogger,
             db,
             'secondary-reference'
         );
