@@ -928,6 +928,66 @@
                     }
                 }
             }
+        },
+        "/questionnaires/{questionnaireId}/letter": {
+            "get": {
+                "tags": ["Questionnaires", "Letters"],
+                "summary": "Download the decision letter associated with a specific questionnaireId",
+                "description": "Downloads a PDF copy of a single questionnaire's decision letter. The result is filtered by owner.",
+                "operationId": "getLetter",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/questionnaireId"
+                    },
+                    {
+                        "$ref": "#/components/parameters/onBehalfOf"
+                    },
+                    {
+                        "$ref": "#/components/parameters/apiVersion"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF returned successfully",
+                        "headers": {
+                            "Content-Disposition": {
+                                "description": "Indicates that the response should be downloaded as a PDF attachment.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "attachment; filename=\"decision-letter-99-123456.pdf\""
+                                }
+                            },
+                            "Cache-Control": {
+                                "description": "Prevents sensitive correspondence from being cached by shared or intermediary caches.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "private, no-store"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/pdf": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                }
+            }
         }
     },
     "components": {

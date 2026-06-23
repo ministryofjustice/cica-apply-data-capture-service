@@ -15,6 +15,7 @@ const isQuestionnaireCompatible = require('./utils/isQuestionnaireVersionCompati
 const createTaskListService = require('./task-list/task-list-service');
 const getProgress = require('./utils/getProgressArray');
 const normaliseAnswers = require('./utils/normaliseAnswers');
+const createRequestService = require('../services/request');
 
 const defaults = {};
 defaults.createQuestionnaireDAL = require('./questionnaire-dal');
@@ -666,6 +667,17 @@ function createQuestionnaireService({
         };
     }
 
+    async function getLetter(questionnaireId) {
+        const requestService = createRequestService();
+        const systemAnswers = await getAnswersBySectionId(questionnaireId, 'system');
+        const letterData = {
+            ownerId,
+            caseReferenceNumber: systemAnswers['case-reference'],
+            letterId: systemAnswers['letter-id']
+        };
+        return requestService.getLetterPdf(letterData);
+    }
+
     return Object.freeze({
         createQuestionnaire,
         createAnswers,
@@ -681,7 +693,8 @@ function createQuestionnaireService({
         updateExpiryForAuthenticatedOwner,
         getQuestionnaireIdsBySubmissionStatus,
         getTemplateMetadata,
-        getTemplateMetadataById
+        getTemplateMetadataById,
+        getLetter
     });
 }
 
