@@ -32,3 +32,21 @@ ignore:
           pinned via npm's bundled node-gyp dependency, build-time only,
           no fix currently available upstream.
         expires: '2026-08-20T00:00:00.000Z'
+  SNYK-JS-URIJS-19963963:
+    - '*':
+        reason: >
+          uri-js@4.4.1, pulled in by ajv@6.14.0 (a direct dependency, used
+          in questionnaire/questionnaire-service.js for real schema
+          validation). uri-js@4.4.1 is the newest version published at
+          all — there is no patched release to upgrade to within ajv@6's
+          declared range (^4.2.2). The only real fix is moving ajv to
+          v8.x, which removes the uri-js dependency entirely (ajv@8 uses
+          fast-uri instead), but that's a major-version jump with known
+          breaking API changes, and two plugins depend on ajv's shape
+          here: ajv-errors@1.0.1 (loose, unverified peer range) and
+          ajv-formats-mobile-uk (a custom in-house plugin from a separate
+          repo, github:CriminalInjuriesCompensationAuthority/ajv-formats-mobile-uk,
+          whose own ajv@8 compatibility hasn't been checked). Tracked as
+          a separate piece of work rather than folded into this migration.
+          See backlog ticket for the ajv v8 migration. (CAPP-209)
+        expires: '2026-11-23T00:00:00.000Z'
