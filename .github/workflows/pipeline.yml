@@ -1,0 +1,135 @@
+name: Validate Build and Deploy
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ministryofjustice/cica-devsecops-workflows/.github/workflows/reusable-node-ci.yml@472bd92b9b78af12bf434bd2bb11a9ee2fcbdde4
+    with:
+      node-version: '24.22.1'
+      test-command: 'npx --no-install jest --ci --runInBand --bail --silent --coverage --projects jest.config.js'
+      lint-command: 'npx --no-install eslint .'
+
+  security:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    uses: ministryofjustice/cica-devsecops-workflows/.github/workflows/reusable-security.yml@472bd92b9b78af12bf434bd2bb11a9ee2fcbdde4
+    with:
+      node-version: '24.22.1'
+      snyk-version: '1.1304.0'
+      snyk-api-url: ${{ vars.SNYK_API_URL || 'https://api.snyk.io' }}
+      run-snyk-monitor: ${{ github.ref == 'refs/heads/dcs-deploy' }}
+    secrets:
+      SNYK_CLIENT_ID: ${{ secrets.SNYK_CLIENT_ID }}
+      SNYK_CLIENT_SECRET: ${{ secrets.SNYK_CLIENT_SECRET }}
+
+  container:
+    needs: [ci, security]
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    uses: ministryofjustice/cica-devsecops-workflows/.github/workflows/reusable-container.yml@472bd92b9b78af12bf434bd2bb11a9ee2fcbdde4
+    with:
+      image-name: cica-repo-dev
+      smoke-test-container-port: 3100
+      snyk-version: '1.1304.0'
+      snyk-api-url: ${{ vars.SNYK_API_URL || 'https://api.snyk.io' }}
+    secrets:
+      SNYK_CLIENT_ID: ${{ secrets.SNYK_CLIENT_ID }}
+      SNYK_CLIENT_SECRET: ${{ secrets.SNYK_CLIENT_SECRET }}
+
+  publish:
+    needs: container
+    if: |
+      github.ref == 'refs/heads/dcs-deploy' ||
+      github.ref == 'refs/heads/dcs-deploy-to-uat' ||
+      github.ref == 'refs/heads/dcs-deploy-to-staging'
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    uses: ministryofjustice/cica-devsecops-workflows/.github/workflows/reusable-publish.yml@472bd92b9b78af12bf434bd2bb11a9ee2fcbdde4
+    with:
+      image-name: cica-repo-dev
+      ecr-region: ${{ vars.ECR_REGION }}
+      ecr-repository: ${{ vars.ECR_REPOSITORY }}
+      ecr-registry-url: ${{ vars.ECR_REGISTRY_URL }}
+      run-container-monitor: ${{ github.ref == 'refs/heads/dcs-deploy' }}
+      snyk-version: '1.1304.0'
+      snyk-api-url: ${{ vars.SNYK_API_URL || 'https://api.snyk.io' }}
+    secrets:
+      ECR_ROLE_TO_ASSUME: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+      SNYK_CLIENT_ID: ${{ secrets.SNYK_CLIENT_ID }}
+      SNYK_CLIENT_SECRET: ${{ secrets.SNYK_CLIENT_SECRET }}
+
+  deploy-dev:
+    needs: publish
+    if: github.ref == 'refs/heads/dcs-deploy'
+    uses: ministryofjustice/cica-devsecops-workflows/.github/workflows/reusable-deploy-kubernetes.yml@472bd92b9b78af12bf434bd2bb11a9ee2fcbdde4
+    with:
+      environment: dev
+      namespace: claim-criminal-injuries-compensation-dev
+      manifest-dir: kube_deploy/Dev
+      container-name: data-capture-service
+      image-uri: ${{ needs.publish.outputs.image-uri }}
+    secrets:
+      KUBE_CERT: ${{ secrets.KUBE_CERT }}
+      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+      KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+
+  deploy-prod:
+    needs: [publish, deploy-dev]
+    if: github.ref == 'refs/heads/dcs-deploy'
+    uses: ministryofjustice/cica-devsecops-workflows/.github/workflows/reusable-deploy-kubernetes.yml@472bd92b9b78af12bf434bd2bb11a9ee2fcbdde4
+    with:
+      environment: prod
+      namespace: claim-criminal-injuries-compensation-prod
+      manifest-dir: kube_deploy/Prod
+      container-name: data-capture-service
+      additional-container-name: dcs-init-checks
+      image-uri: ${{ needs.publish.outputs.image-uri }}
+    secrets:
+      KUBE_CERT: ${{ secrets.KUBE_CERT }}
+      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+      KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+
+  deploy-uat:
+    needs: publish
+    if: github.ref == 'refs/heads/dcs-deploy-to-uat'
+    uses: ministryofjustice/cica-devsecops-workflows/.github/workflows/reusable-deploy-kubernetes.yml@472bd92b9b78af12bf434bd2bb11a9ee2fcbdde4
+    with:
+      environment: uat
+      namespace: claim-criminal-injuries-compensation-uat
+      manifest-dir: kube_deploy/Uat
+      container-name: data-capture-service
+      image-uri: ${{ needs.publish.outputs.image-uri }}
+    secrets:
+      KUBE_CERT: ${{ secrets.KUBE_CERT }}
+      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+      KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+
+  deploy-staging:
+    needs: publish
+    if: github.ref == 'refs/heads/dcs-deploy-to-staging'
+    uses: ministryofjustice/cica-devsecops-workflows/.github/workflows/reusable-deploy-kubernetes.yml@472bd92b9b78af12bf434bd2bb11a9ee2fcbdde4
+    with:
+      environment: staging
+      namespace: claim-criminal-injuries-compensation-stag
+      manifest-dir: kube_deploy/Stag
+      container-name: data-capture-service
+      image-uri: ${{ needs.publish.outputs.image-uri }}
+    secrets:
+      KUBE_CERT: ${{ secrets.KUBE_CERT }}
+      KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+      KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
