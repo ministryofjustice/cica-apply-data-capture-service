@@ -15,7 +15,7 @@ executors:
 jobs:
   snyk_app_scan:
     docker:
-      - image: node:24.15.0-trixie-slim
+      - image: node:24.22.1-trixie-slim
     resource_class: large
     steps:
       - checkout
@@ -37,7 +37,7 @@ jobs:
           command: snyk test --severity-threshold=high
   snyk_monitor:
     docker:
-      - image: node:24.15.0-trixie-slim
+      - image: node:24.22.1-trixie-slim
     resource_class: large
     steps:
       - checkout
@@ -79,7 +79,7 @@ jobs:
             /usr/local/bin/snyk container monitor cica/cica-repo-dev
   build-for-test:
     docker:
-      - image: node:24.15.0-trixie-slim
+      - image: node:24.22.1-trixie-slim
     resource_class: large
     steps:
       - checkout
@@ -101,7 +101,7 @@ jobs:
             - ./node_modules
   test:
     docker:
-      - image: node:24.15.0-trixie-slim
+      - image: node:24.22.1-trixie-slim
     steps:
       - attach_workspace:
           at: ./
@@ -112,7 +112,7 @@ jobs:
           command: npx --no-install jest --ci --runInBand --bail --silent --coverage --projects jest.config.js
   lint:
     docker:
-      - image: node:24.15.0-trixie-slim
+      - image: node:24.22.1-trixie-slim
     steps:
       - attach_workspace:
           at: ./
