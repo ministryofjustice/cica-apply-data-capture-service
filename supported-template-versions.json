@@ -25,6 +25,9 @@
             "module": "q-templates-application-12_4_8"
         },
         "12.4.10": {
+            "module": "q-templates-application-12_4_10"
+        },
+        "12.4.11": {
             "module": "q-templates-application",
             "latest": true
         }
