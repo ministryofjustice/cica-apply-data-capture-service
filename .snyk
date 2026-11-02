@@ -172,3 +172,27 @@ ignore:
           resolve it. Accepted pending upstream Debian patch or a base-image
           migration. Recheck on base-image bump.
         expires: '2026-11-09T00:00:00.000Z'
+  SNYK-DEBIAN13-SQLITE3-22119065:
+    - '*':
+        reason: >
+          sqlite3/libsqlite3-0 is introduced by the node:24.22.1-trixie
+          base image, not by an application dependency. Snyk did not provide
+          an available base-image remediation. Temporarily accepted pending
+          a Debian security update or base-image update; recheck before expiry.
+        expires: '2026-11-09T00:00:00.000Z'
+  SNYK-DEBIAN13-SQLITE3-22119091:
+    - '*':
+        reason: >
+          sqlite3/libsqlite3-0 is introduced by the node:24.22.1-trixie
+          base image, not by an application dependency. Snyk did not provide
+          an available base-image remediation. Temporarily accepted pending
+          a Debian security update or base-image update; recheck before expiry.
+        expires: '2026-11-09T00:00:00.000Z'
+  SNYK-DEBIAN13-SQLITE3-22119098:
+    - '*':
+        reason: >
+          sqlite3/libsqlite3-0 is introduced by the node:24.22.1-trixie
+          base image, not by an application dependency. Snyk did not provide
+          an available base-image remediation. Temporarily accepted pending
+          a Debian security update or base-image update; recheck before expiry.
+        expires: '2026-11-09T00:00:00.000Z'
